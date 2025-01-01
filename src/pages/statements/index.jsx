@@ -213,17 +213,17 @@ export default function AccountsDefault() {
                                             </TableContainer>
 
                                             :
-                                                <Grid sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                                    <img
-                                                        src={NoDataFound}
-                                                        alt='No Data Found'
-                                                        style={{
-                                                            maxWidth: '100%',
-                                                            maxHeight: '100%',
-                                                            objectFit: 'contain',
-                                                        }}
-                                                    />
-                                                </Grid>
+                                            <Grid sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                <img
+                                                    src={NoDataFound}
+                                                    alt='No Data Found'
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '100%',
+                                                        objectFit: 'contain',
+                                                    }}
+                                                />
+                                            </Grid>
 
                                         }
                                     </TabPanel>
@@ -236,4 +236,3 @@ export default function AccountsDefault() {
         </>
     );
 }
-

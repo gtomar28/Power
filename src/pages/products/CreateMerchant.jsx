@@ -77,6 +77,7 @@ export default function CreateMerchant() {
     }
 
     const phoneNo = watch('phone_number')
+    
     const userData = {
         'ID': 25,
         'Name': "Client Name",
@@ -267,7 +268,7 @@ export default function CreateMerchant() {
                 <DialogActions sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
                     <Button
                         variant="contained"
-                        component = {Link}
+                        component={Link}
                         to='/products'
                         onClick={handleCloseDialog}
                         sx={{

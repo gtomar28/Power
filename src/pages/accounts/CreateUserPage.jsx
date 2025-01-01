@@ -77,11 +77,11 @@ export default function CreateUserPage() {
 
     const createAccount = async (data) => {
         const dataJson = {
-            "bank_name": data.bank_name ,
-            "branch_name": data.branch_name ,
-            "account_number": data.bank_account_number ,
-            "ifsc": data.IFSC ,
-            "upi_id": data.upi_id ,
+            "bank_name": data.bank_name,
+            "branch_name": data.branch_name,
+            "account_number": data.bank_account_number,
+            "ifsc": data.IFSC,
+            "upi_id": data.upi_id,
         }
         try {
             const response = await CreateBank(dataJson);
@@ -169,7 +169,7 @@ export default function CreateUserPage() {
                         </Grid>
                     </Grid>
                     <Grid item xs={12} lg={5} sx={{ display: 'flex', alignItems: 'center' }}>
-                        
+
                     </Grid>
                 </Grid>
             </Grid>
@@ -512,12 +512,12 @@ export default function CreateUserPage() {
 
                 <Grid item xs={6}>
                     <form onSubmit={handleSubmit(createAccount)}>
-                        <Grid container sx={{ backgroundColor: '#fff', borderRadius: '15px', p:3 }}>
+                        <Grid container sx={{ backgroundColor: '#fff', borderRadius: '15px', p: 3 }}>
                             <Grid item xs={12} >
                                 <Typography variant="h5">
                                     Bank Details
                                 </Typography>
-                                <Grid container rowSpacing={1} columnSpacing={1.5} sx={{ backgroundColor: '#F6F8FC', borderRadius: '15px', p: 1, mt: 2, pb:3 }}>
+                                <Grid container rowSpacing={1} columnSpacing={1.5} sx={{ backgroundColor: '#F6F8FC', borderRadius: '15px', p: 1, mt: 2, pb: 3 }}>
                                     <Grid item xs={12} md={12}>
                                         <Stack spacing={1}>
                                             <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>UPI ID</Typography>
@@ -890,4 +890,3 @@ export default function CreateUserPage() {
 //         </Grid>
 //     );
 // }
-

@@ -32,7 +32,7 @@ const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
                 <AmountCards
                     title="PayOut Amount"
                     count={`${Statics?.total_payout_amount} INR`}
-                    extra={`Available PayOut Limit: ${Statics?.payout_limit}`}
+                    extra={`Available PayIn Limit: ${Statics?.payout_limit}`}
                     image={walletSettings}
                 />
             </Grid>

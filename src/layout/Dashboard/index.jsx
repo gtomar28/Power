@@ -36,28 +36,28 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // useEffect(() => {
-  //   if (token) {
-  //     let backButtonListener;
-  //     if (window.Capacitor) {
-  //       import('@capacitor/app').then(({ App }) => {
-  //         backButtonListener = App.addListener('backButton', () => {
-  //           if (location.pathname === '/') {
-  //             App.exitApp();
-  //           } else {
-  //             navigate(-1);
-  //           }
-  //         });
-  //       });
-  //     }
+  useEffect(() => {
+    if (token) {
+      let backButtonListener;
+      if (window.Capacitor) {
+        import('@capacitor/app').then(({ App }) => {
+          backButtonListener = App.addListener('backButton', () => {
+            if (location.pathname === '/') {
+              App.exitApp();
+            } else {
+              navigate(-1);
+            }
+          });
+        });
+      }
 
-  //     return () => {
-  //       if (backButtonListener) {
-  //         backButtonListener.remove();
-  //       }
-  //     };
-  //   }
-  // }, [token, navigate, location.pathname]);
+      return () => {
+        if (backButtonListener) {
+          backButtonListener.remove();
+        }
+      };
+    }
+  }, [token, navigate, location.pathname]);
 
   const drawerOpen = menuMaster?.isDashboardDrawerOpened || false;
 

@@ -51,7 +51,7 @@ export default function UserProfileDefault() {
         {/* Column 1 */}
         <Grid item xs={12} sx={{ mb: -2.25 }}>
           <Typography variant="h5" sx={{ color: '#828282', textTransform: 'capitalize' }}>
-          Hi {userLocalData?.name !== '' ? userLocalData?.name : userLocalData?.username},
+            Hi {userLocalData?.name !== '' ? userLocalData?.name : userLocalData?.username},
           </Typography>
           <Grid container sx={{ display: 'flex' }}>
             <Grid item xs={11} lg={7} alignSelf='center'>

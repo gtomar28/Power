@@ -308,18 +308,18 @@ export default function AccountsDefault() {
                                                 </Table>
                                                 <TablePagination rowsPerPageOptions={[10, 25, 50]} rowsPerPage={rowsPerPage} page={page} count={data?.length} onPageChange={handleChangePage} onRowsPerPageChange={handleChangeRowsPerPage} />
                                             </TableContainer>
-                                                :
-                                                <Grid sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                                    <img
-                                                        src={NoDataFound}
-                                                        alt='No Data Found'
-                                                        style={{
-                                                            maxWidth: '100%',
-                                                            maxHeight: '100%',
-                                                            objectFit: 'contain',
-                                                        }}
-                                                    />
-                                                </Grid>
+                                            :
+                                            <Grid sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                <img
+                                                    src={NoDataFound}
+                                                    alt='No Data Found'
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '100%',
+                                                        objectFit: 'contain',
+                                                    }}
+                                                />
+                                            </Grid>
                                         }
                                     </TabPanel>
                                 </>
@@ -348,6 +348,3 @@ export default function AccountsDefault() {
         </>
     );
 }
-
-
-

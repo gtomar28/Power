@@ -102,13 +102,13 @@ export default function PayInOperationsDefault() {
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             console.log('Input entered:', searchTerm);
-            setShowInput(false); 
+            setShowInput(false);
         }
     };
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (inputRef.current && !inputRef.current.contains(event.target)) {
-                setShowInput(false); 
+                setShowInput(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -244,11 +244,11 @@ export default function PayInOperationsDefault() {
 
                                             {menuScreenSize && showInput && (
                                                 <OutlinedInput ref={inputRef} value={searchTerm === 'All' ? '' : searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={handleKeyDown} autoFocus placeholder="Search" startAdornment={
-                                                        <InputAdornment position="start">
-                                                            <SearchIcon style={{ color: '#3B82F6' }} />
-                                                        </InputAdornment>
-                                                    }
-                                                    sx={{ position: 'absolute', top: 50, transform: 'translateX(-100%)', zIndex: 10, width: '50vh', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px', '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&.Mui-focused': { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', }, }}
+                                                    <InputAdornment position="start">
+                                                        <SearchIcon style={{ color: '#3B82F6' }} />
+                                                    </InputAdornment>
+                                                }
+                                                    sx={{ position: 'absolute', top: 50, transform: 'translateX(-100%)', zIndex: 10, width: '38vh', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px', '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&.Mui-focused': { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', }, }}
                                                 />
                                             )}
                                         </Grid>

@@ -16,10 +16,10 @@ const iconSX = { fontSize: '0.75rem', color: 'inherit', marginLeft: 0, marginRig
 
 export default function ProfileAmountCards({ title, count, extra, image }) {
     return (
-        <MainCard contentSX={{ p: 2 }}>
+        <MainCard contentSX={{ p: 1, pt: 2 }}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={8} alignContent='center'>
-                    <Stack spacing={0.5} sx={{ height: '100%'}}>
+                <Grid item xs={10} md={8} alignContent='center'>
+                    <Stack spacing={0.5} sx={{ height: '100%' }}>
                         <Typography variant="h6" sx={{ fontWeight: 400, color: '#676767' }}>
                             {title}
                         </Typography>
@@ -32,7 +32,7 @@ export default function ProfileAmountCards({ title, count, extra, image }) {
                         </Grid>
                     </Stack>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={2} md={4}>
                     <Card sx={{ height: '100%', backgroundColor: '#F2F6FC', boxShadow: 'none', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', p: 1 }}>
                         {image && (
                             <img

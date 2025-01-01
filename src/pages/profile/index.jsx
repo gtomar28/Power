@@ -40,7 +40,7 @@ export default function UserProfileDefault() {
   }, [userId, isEditable])
 
   const handleCloseDialog = () => {
-     setOpenDialog(false)
+    setOpenDialog(false)
   }
 
   const getUserData = async () => {
@@ -139,11 +139,11 @@ export default function UserProfileDefault() {
               <Grid item xs={4} lg={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Notification />
                 {/* <img src={bellNotification} alt="bellNotification" /> */}
-                <Button onClick={() => setOpenDialog(true) } disableRipple sx={{
+                <Button onClick={() => setOpenDialog(true)} disableRipple sx={{
                   minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 2, ml: 1, py: 0.7, fontSize: '14px', fontWeight: 500,
                   backgroundColor: '#F2F6FC', border: '1px solid #2C6DB5', color: '#2C6DB5', boxShadow: 'none',
                   '&:hover, &:active, &:focus': { backgroundColor: '#F2F6FC', border: '1px solid #2C6DB5', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
-                }}> <LogoutOutlined /> <Typography sx={{ml:1}}>Logout</Typography> </Button>
+                }}> <LogoutOutlined /> <Typography sx={{ ml: 1 }}>Logout</Typography> </Button>
               </Grid>
             </Grid>
           </Grid>
@@ -166,7 +166,7 @@ export default function UserProfileDefault() {
               </Typography>
               <div>
                 {!isEditable ? (
-                  <Grid display='flex' alignItems='center' onClick={handleUpdateClick} sx={{ cursor: 'pointer',border: '1px solid #2C6DB5', borderRadius: '34px', px: 4, py: 1, color: '#2C6DB5' }} >
+                  <Grid display='flex' alignItems='center' onClick={handleUpdateClick} sx={{ cursor: 'pointer', border: '1px solid #2C6DB5', borderRadius: '34px', px: 4, py: 1, color: '#2C6DB5' }} >
                     <DriveFileRenameOutlineIcon /> <Typography>Update</Typography>
                   </Grid>
                 ) : (
@@ -218,7 +218,7 @@ export default function UserProfileDefault() {
               onClose={() => setOpenSnackBar(false)}
               severity="success"
               variant="filled"
-              sx={{ width: '100%', color:'#fff' }}
+              sx={{ width: '100%', color: '#fff' }}
             >
               User profile data updated successfully
             </Alert>
@@ -267,5 +267,3 @@ export default function UserProfileDefault() {
     </>
   );
 }
-
-

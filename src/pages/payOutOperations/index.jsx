@@ -245,7 +245,7 @@ export default function PayOutOperationsDefault() {
                                                         <SearchIcon style={{ color: '#3B82F6' }} />
                                                     </InputAdornment>
                                                 }
-                                                    sx={{ position: 'absolute', top: 50, transform: 'translateX(-100%)', zIndex: 10, width: '50vh', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px', '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&.Mui-focused': { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', }, }}
+                                                    sx={{ position: 'absolute', top: 50, transform: 'translateX(-100%)', zIndex: 10, width: '38vh', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px', '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&.Mui-focused': { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', }, }}
                                                 />
                                             )}
                                         </Grid>

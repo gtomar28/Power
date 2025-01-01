@@ -18,7 +18,7 @@
     }
   },
   "server": {
-    "url": "https://power-plum-six.vercel.app/",
+    "url": "https://powerr.vercel.app/",
     "cleartext": false
   }
 }

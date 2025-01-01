@@ -169,7 +169,6 @@ export default function AccountsDefault() {
                                         <SearchIcon style={{ color: '#3B82F6' }} />
                                     </InputAdornment>
                                 }
-                                onChange={(e) => setSearchVal(e.target.value)}
                                 sx={{
                                     width: '100%', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px',
                                     '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
@@ -189,15 +188,13 @@ export default function AccountsDefault() {
                         <Box sx={{}}>
                             <Grid container sx>
                                 <Grid item xs={5} md={8} sx={{ display: { xs: 'flex', md: 'block' }, justifyContent: { xs: 'start', md: 'unset' } }}>
-                                    {menuScreenSize ?
+                                    {/* {menuScreenSize ?
                                         <Select value={value} onChange={(e) => { handleChange(e, e.target.value), setRoleVal(e.target.value === 'All' ? '' : e.target.value) }} sx={{ backgroundColor: '#fff', borderRadius: '4px', border: 'none', boxShadow: 'none', '&:hover': { border: 'none', boxShadow: 'none', }, '&.Mui-focused': { border: 'none', boxShadow: 'none', }, '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:focus-visible': { outline: 'none', }, '&.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 'none', }, }} >
                                             <MenuItem value="All">All</MenuItem>
-                                            {/* <MenuItem value="Active">Active</MenuItem>
-                                            <MenuItem value="InActive">Inactive</MenuItem> */}
                                             {role === 'super admin' && <MenuItem value="superAdmin">Super Admin</MenuItem>}
                                             {role === 'admin' || role === 'super admin' && <MenuItem value="Admin">Admin</MenuItem>}
-                                            {role === 'creator' || role === 'admin' || role === 'super admin' && <MenuItem value="creator">Sub Admin</MenuItem>}
-                                            {role === 'agent' || role === 'creator' || role === 'admin' || role === 'super admin' && <MenuItem value="agent">Peer</MenuItem>}
+                                            {role === 'sub-admin' || role === 'admin' || role === 'super admin' && <MenuItem value="creator">Sub Admin</MenuItem>}
+                                            {role === 'agent' || role === 'sub-admin' || role === 'admin' || role === 'super admin' && <MenuItem value="agent">Peer</MenuItem>}
                                         </Select>
                                         :
                                         <TabList onChange={handleChange} aria-label="customized tabs" sx={{
@@ -211,14 +208,50 @@ export default function AccountsDefault() {
                                             '& .MuiTabs-indicator': { backgroundColor: 'transparent' },
                                         }}>
                                             <Tab label="All" value="All" onClick={() => { setStatusVal(''); setRoleVal(''); }} />
-                                            {/* <Tab label="Active" value="Active" onClick={() => { setRoleVal(''); setStatusVal('active') }} />
-                                    <Tab label="Inactive" value="InActive" onClick={() => { setRoleVal(''); setStatusVal('inactive') }} /> */}
                                             {role === 'super admin' && <Tab label="Super Admin" value="SuperAdmin" onClick={() => { setStatusVal(''); setRoleVal('superadmin') }} />}
                                             {role === 'admin' || role === 'super admin' && <Tab label="Admin" value="Admin" onClick={() => { setStatusVal(''); setRoleVal('admin') }} />}
-                                            {role === 'creator' || role === 'admin' || role === 'super admin' && <Tab label="SubAdmin" value="SubAdmin" onClick={() => { setStatusVal(''); setRoleVal('creator') }} />}
-                                            {role === 'agent' || role === 'creator' || role === 'admin' || role === 'super admin' && <Tab label="Peer" value="Peer" onClick={() => { setStatusVal(''); setRoleVal('agent') }} />}
+                                            {role === 'sub-admin' || role === 'admin' || role === 'super admin' && <Tab label="SubAdmin" value="SubAdmin" onClick={() => { setStatusVal(''); setRoleVal('creator') }} />}
+                                            {role === 'agent' || role === 'sub-admin' || role === 'admin' || role === 'super admin' && <Tab label="Peer" value="Peer" onClick={() => { setStatusVal(''); setRoleVal('agent') }} />}
                                         </TabList>
-                                    }
+                                    } */}
+                                    {menuScreenSize ? (
+                                        <Select
+                                            value={value}
+                                            onChange={(e) => {
+                                                handleChange(e, e.target.value);
+                                                setRoleVal(e.target.value === 'All' ? '' : e.target.value);
+                                            }}
+                                            sx={{
+                                                backgroundColor: '#fff',
+                                                borderRadius: '4px',
+                                                border: 'none',
+                                                boxShadow: 'none',
+                                                '&:hover': { border: 'none', boxShadow: 'none' },
+                                                '&.Mui-focused': { border: 'none', boxShadow: 'none' },
+                                                '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                                            }}
+                                        >
+                                            <MenuItem value="All">All</MenuItem>
+                                            {role === 'super admin' && <MenuItem value="superAdmin">Super Admin</MenuItem>}
+                                            {(role === 'admin' || role === 'super admin') && <MenuItem value="Admin">Admin</MenuItem>}
+                                            {(role === 'sub-admin' || role === 'admin' || role === 'super admin') && (
+                                                <MenuItem value="creator">Sub Admin</MenuItem>
+                                            )}
+                                            {(role === 'agent' ||
+                                                role === 'sub-admin' ||
+                                                role === 'admin' ||
+                                                role === 'super admin') && <MenuItem value="agent">Peer</MenuItem>}
+                                        </Select>
+                                    ) : (
+                                        <TabList onChange={handleChange} aria-label="customized tabs" sx={{ '& .MuiTab-root': { textTransform: 'none', px: 2.5, backgroundColor: '#fff', borderRadius: '10px', color: '#ADA7A7', marginRight: 1, minWidth: 'fit-content', transition: 'background-color 0.3s', '&:hover': { backgroundColor: '#2C6DB5', color: '#ffffff' }, '&:active': { backgroundColor: '#2C6DB5', color: '#ffffff' }, }, '& .Mui-selected': { backgroundColor: '#2C6DB5', color: '#ffffff !important' }, '& .MuiTabs-indicator': { backgroundColor: 'transparent' }, }} >
+                                            <Tab label="All" value="All" onClick={() => { setStatusVal(''); setRoleVal(''); }} />
+                                            {role === 'super admin' && ( <Tab label="Super Admin" value="SuperAdmin" onClick={() => { setStatusVal(''); setRoleVal('superadmin'); }} /> )}
+                                            {(role === 'admin' || role === 'super admin') && ( <Tab label="Admin" value="Admin" onClick={() => { setStatusVal(''); setRoleVal('admin'); }} /> )}
+                                            {(role === 'sub-admin' || role === 'admin' || role === 'super admin') && ( <Tab label="SubAdmin" value="SubAdmin" onClick={() => { setStatusVal(''); setRoleVal('creator'); }} /> )}
+                                            {(role === 'agent' || role === 'sub-admin' || role === 'admin' || role === 'super admin') && ( <Tab label="Peer" value="Peer" onClick={() => { setStatusVal(''); setRoleVal('agent'); }} /> )}
+                                        </TabList>
+                                    )}
+
                                 </Grid>
                                 <Grid item xs={7} md={4} display='flex' justifyContent='end' alignItems='center'>
                                     <Button href='/createUser' disableRipple sx={{
@@ -240,7 +273,7 @@ export default function AccountsDefault() {
                                                     <SearchIcon style={{ color: '#3B82F6' }} />
                                                 </InputAdornment>
                                             }
-                                                sx={{ position: 'absolute', top: 50, transform: 'translateX(-100%)', zIndex: 10, width: '50vh', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px', '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&.Mui-focused': { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', }, }}
+                                                sx={{ position: 'absolute', top: 50, transform: 'translateX(-100%)', zIndex: 10, width: '38vh', backgroundColor: '#fff', borderRadius: '24px', padding: '6px 16px', '& .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none', }, '&.Mui-focused': { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', }, }}
                                             />
                                         )}
                                     </Grid>
