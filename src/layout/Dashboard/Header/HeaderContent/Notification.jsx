@@ -140,6 +140,8 @@ export default function Notification() {
 
   // notification
 
+
+  
   const createNotificationChannel = () => {
     if (Capacitor.getPlatform() === 'android') {
       PushNotifications.createChannel({
@@ -159,8 +161,8 @@ export default function Notification() {
     createNotificationChannel();
 
     if (Capacitor.getPlatform() !== 'web') {
-      // Request permission for push notifications only on Android and iOS
-      if (Capacitor.getPlatform() === 'android' || Capacitor.getPlatform() === 'ios') {
+      // For Android, no need to explicitly request permission. Permissions are handled during registration.
+      if (Capacitor.getPlatform() === 'ios') {
         PushNotifications.requestPermission().then((result) => {
           if (result.granted) {
             // Register for push notifications if permission is granted
@@ -203,7 +205,6 @@ export default function Notification() {
       };
     }
   }, []);
-
 
 
   const markAllRead = () => {
