@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 // project import
 import DrawerFooterStyled from './DrawerFooterStyled';
-import profileBg from 'assets/images/profileBg.svg';
+// import profileBg from 'assets/images/profileBg.svg';
 import profileImage from 'assets/images/profileImage.svg';
 import { useGetMenuMaster } from 'api/menu';
 
@@ -20,7 +20,7 @@ export default function DrawerFooter({ open }) {
 
   return (
     <DrawerFooterStyled theme={theme} open={!!open} sx={{ p: 1 }}>
-      <Grid component={Link} to="/profile" sx={{ color: '#fff', textDecoration: 'none', p: drawerOpen ? 2 : 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundImage: `url(${profileBg})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'center', width: '100%', height: 'fit-content', borderRadius: drawerOpen ? '20px' : '0px', }} >
+      <Grid component={Link} to="/profile" sx={{ color: '#fff', textDecoration: 'none', p: drawerOpen ? 2 : 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundImage: `url(assets/images/profileBg.svg)`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'center', width: '100%', height: 'fit-content', borderRadius: drawerOpen ? '20px' : '0px', }} >
         <img src={profileImage} alt="Logo" />
         {drawerOpen && (
           <>
