@@ -5,9 +5,9 @@ import android.util.Log;
 
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingService;
 
 public class MainActivity extends BridgeActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,6 +22,7 @@ public class MainActivity extends BridgeActivity {
                 // Get the FCM token
                 String token = task.getResult();
                 Log.d("PushNotification", "FCM Token: " + token);
+                // You can send the token to your backend here
             });
     }
 }

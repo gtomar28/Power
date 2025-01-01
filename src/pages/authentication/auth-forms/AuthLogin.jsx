@@ -27,6 +27,7 @@ import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 import { LoginSuccess, Loginuse } from 'api/api';
 import { encryptData } from 'api/Encrypt_data';
+import toast from 'react-hot-toast';
 
 // ============================|| JWT - LOGIN ||============================ //
 
@@ -74,8 +75,12 @@ export default function AuthLogin({ isDemo = false }) {
         localStorage.setItem(`power_token`, response?.data?.token);
         localStorage.setItem('login_time', new Date().getTime()); // Store login time
       }
+      else{
+        toast.error('Login failed. ' + (response?.data?.non_field_errors[0] || 'Please try again.'));
+      }
     } catch (err) {
-      console.error(err);
+      toast.error('Login failed. ' + (err?.response?.data?.non_field_errors[0] || 'Please try again.'));
+      console.error(err, 'vgyhvgctfghvghb');
     } finally {
       setSubmitting(false);
     }
