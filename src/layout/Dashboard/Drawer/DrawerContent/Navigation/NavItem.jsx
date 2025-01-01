@@ -25,8 +25,8 @@ export default function NavItem({ item, level }) {
   // Determine if the current item is selected based on `pathname`
   const isSelected =
     (Array.isArray(item.url)
-      ? item.url.some((url) => !!matchPath({ path: url, end: false }, pathname))
-      : !!matchPath({ path: item.url, end: false }, pathname)) ||
+      ? item.url.some((url) => !!matchPath({ path: url, end: true }, pathname))
+      : !!matchPath({ path: item.url, end: true }, pathname)) ||
     openItem === item.id;
 
   // Set the active item when the page loads or changes

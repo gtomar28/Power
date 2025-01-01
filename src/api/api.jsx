@@ -7,6 +7,31 @@ var bearerToken = `Token ${localStorage.getItem('power_token')}`
 // My code 
 
 
+export const CreateBank = async (requestData) => {
+    axios.defaults.headers.common["Authorization"] = bearerToken;
+
+    var response = await axios.post(`${API_URL}/api/banks/`, requestData);
+    if (response) {
+        return response;
+    } else {
+        return [];
+    }
+}
+
+
+
+export const getAllAccounts = async () => {
+    axios.defaults.headers.common["Authorization"] = bearerToken;
+    var response = await axios.get(`${API_URL}/api/banks/`,);
+    if (response) {
+        return response;
+
+
+    } else {
+        return [];
+    }
+}
+
 export const getAllSavedReports = async () => {
     axios.defaults.headers.common["Authorization"] = bearerToken;
     var response = await axios.get(`${API_URL}/api/reports/`,);
@@ -140,9 +165,9 @@ export const createOrderForPayout = async (requestData, hmac) => {
     }
 }
 
-export const getAllOrders = async (searchData, pageNo, day, agent, Status) => {
+export const getAllOrders = async (searchData, pageNo, day, agent) => {
     axios.defaults.headers.common["Authorization"] = bearerToken;
-    var response = await axios.get(`${API_URL}/api/orders/?page=${pageNo}&search=${searchData}&date_filter=${day}&agent_id=${agent}&approval_status=${Status}`,);
+    var response = await axios.get(`${API_URL}/api/orders/?page=${pageNo}&search=${searchData}&date_filter=${day}&agent_id=${agent}`,);
     if (response) {
         return response;
     } else {
@@ -496,6 +521,21 @@ export const generateRepot = async (requestData) => {
 
 
 export const Downloadreport = async (id) => {
+    const response = await axios.get(`${API_URL}/api/reports/${id}/download/`, '', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': bearerToken, // If needed
+        },
+    })
+    if (response) {
+        return response;
+    } else {
+        return [];
+    }
+}
+
+
+export const ShowReport = async (id) => {
     const response = await axios.get(`${API_URL}/api/reports/${id}/`, '', {
         headers: {
             'Content-Type': 'application/json',
@@ -515,6 +555,18 @@ export const clientDetails = async () => {
     axios.defaults.headers.common["Authorization"] = bearerToken;
 
     var response = await axios.get(`${API_URL}/api/clients/`,);
+    if (response) {
+        return response;
+    } else {
+        return [];
+    }
+}
+
+
+export const addNewClient = async (data) => {
+    axios.defaults.headers.common["Authorization"] = bearerToken;
+
+    var response = await axios.post(`${API_URL}/api/clients/`, data);
     if (response) {
         return response;
     } else {

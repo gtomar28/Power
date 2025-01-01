@@ -7,7 +7,7 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title,
 
 // ==============================|| INCOME AREA CHART ||============================== //
 
-export default function IncomeAreaChart({ graphDat, slot }) {
+export default function IncomeAreaChart({ graphDat }) {
 
   const [showLoader, setShowLoader] = useState(false);
 

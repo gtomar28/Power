@@ -106,7 +106,7 @@ export default function AuthLogin({ isDemo = false }) {
         localStorage.setItem(
           `id`, JSON.stringify(response?.data?.users[0]?.personal_details.id)
         );
-        navigate("/dashboard")
+        navigate("/")
         window.location.reload();
       }
     } catch (err) {

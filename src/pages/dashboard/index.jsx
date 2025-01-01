@@ -9,8 +9,10 @@ import Notification from 'layout/Dashboard/Header/HeaderContent/Notification';
 
 import { useState, useEffect } from 'react';
 import { graphData } from 'api/api';
+import HashLoader from 'components/HashLoader';
 
 export default function DashboardDefault() {
+
 
   // const role = JSON.parse(localStorage.getItem("role"));
 
@@ -47,7 +49,7 @@ export default function DashboardDefault() {
         setShowLoader(false);
       setGraphData(orderResponse?.data?.graph_data);
       setStatics(orderResponse?.data);
-      setAdminDetails(orderResponse?.data?.Hierarchy)
+      setAdminDetails(orderResponse?.data?.Hierarchy);
     } catch (err) {
       console.log(err);
     }
@@ -59,55 +61,39 @@ export default function DashboardDefault() {
 
 
   return (
-    <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-      {/* Column 1 */}
-      <Grid item xs={12} sx={{ mb: -2.25 }}>
-        <Typography variant="h5" sx={{ color: '#828282', textTransform: 'capitalize' }}>
-          Hi {userLocalData?.name},
-        </Typography>
-        <Grid container sx={{ display: 'flex' }}>
-          <Grid item xs={12} lg={7} alignSelf='center'>
-            <Typography variant="h2">Welcome to  Dashboard</Typography>
-          </Grid>
-          <Grid item xs={12} lg={5} sx={{ display: 'flex', alignItems: 'center' }}>
-            {/* <img src={bellNotification} alt="bellNotification" /> */}
-            <Notification />
-            <OutlinedInput
-              placeholder="Search"
-              startAdornment={
-                <InputAdornment position="start">
-                  <SearchIcon style={{ color: '#3B82F6' }} />
-                </InputAdornment>
-              }
-              sx={{
-                ml: 2,
-                width: '100%',
-                backgroundColor: '#fff',
-                borderRadius: '24px',
-                padding: '6px 16px',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  border: 'none',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  border: 'none',
-                },
-                '&.Mui-focused': {
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                },
-              }}
-            />
+    <>
+      {
+        showLoader && (
+          <HashLoader />
+        )
+      }
+      <Grid container rowSpacing={4.5} columnSpacing={2.75}>
+        {/* Column 1 */}
+        <Grid item xs={12} sx={{ mb: -2.25 }}>
+          <Typography variant="h5" sx={{ color: '#828282', textTransform: 'capitalize' }}>
+          Hi {userLocalData?.name !== '' ? userLocalData?.name : userLocalData?.username},
+          </Typography>
+          <Grid container sx={{ display: 'flex' }}>
+            <Grid item xs={12} lg={7} alignSelf='center'>
+              <Grid sx={{display: 'flex'}}>
+                <Typography flexGrow={1} variant="h2">Welcome to  Dashboard</Typography>
+                <Notification />
+              </Grid>
+            </Grid>
+            <Grid item xs={12} lg={5} sx={{ display: 'flex', alignItems: 'center', }}>
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
-      <Grid item xs={12} md={6} lg={6}>
-        <FirstCardBoxHolder Statics={Statics} adminDetails={adminDetails}/>
-      </Grid>
+        <Grid item xs={12} md={6} lg={6}>
+          <FirstCardBoxHolder Statics={Statics} adminDetails={adminDetails} />
+        </Grid>
 
-      {/* Column 2 */}
-      <Grid item xs={12} md={6} lg={6}>
-        <UniqueVisitorCard Statics={Statics} graphDat={graphDat}/>
-      </Grid>
+        {/* Column 2 */}
+        <Grid item xs={12} md={6} lg={6}>
+          <UniqueVisitorCard Statics={Statics} graphDat={graphDat} />
+        </Grid>
 
-    </Grid>
+      </Grid>
+    </>
   );
 }

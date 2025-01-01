@@ -4,7 +4,7 @@ import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
 import CircleIcon from '@mui/icons-material/Circle';
 import ProfileAmountCards from 'components/cards/statistics/ProfileAmountCards';
 
-const FirstCardBoxHolder = ({ data, personalData }) => {
+const FirstCardBoxHolder = ({ data, personalData, paymentData }) => {
 
     const adminStatsData = [
         { admin: 'Admin 1', payIn: '30,00,000', payOut: '22,00,000' },
@@ -22,10 +22,10 @@ const FirstCardBoxHolder = ({ data, personalData }) => {
                 <ProfileAmountCards title="Total Operations" count={data?.total_operations} extra={`Total Operations: ${data?.total_operations}`} image='' />
             </Grid>
             <Grid item xs={12} sm={4} md={4} lg={4}>
-                <ProfileAmountCards title="Total PayIn" count={data?.total_payin_count} extra={`Available PayIn Limit: ${data?.total_payin_amount}`} image='' />
+                <ProfileAmountCards title="Total PayIn" count={data?.total_payin_count} extra={`Available PayIn Limit: ${paymentData?.payin_limit}`} image='' />
             </Grid>
             <Grid item xs={12} sm={4} md={4} lg={4}>
-                <ProfileAmountCards title="Total PayOut" count={data?.total_payout_count} extra={`Available PayOut Limit: ${data?.total_payout_amount}`} image='' />
+                <ProfileAmountCards title="Total PayOut" count={data?.total_payout_count} extra={`Available PayOut Limit: ${paymentData?.payout_limit}`} image='' />
             </Grid>
             <Grid item xs={12} sm={6} md={6} lg={4}>
                 <AnalyticEcommerce title="Total PayIn" count={data?.total_payin_count} />

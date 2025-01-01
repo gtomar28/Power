@@ -18,24 +18,27 @@ const icons = {
   LogoutOutlinedIcon,
 };
 
+const role = localStorage.getItem("role") || '';
+
 const dashboard = {
   id: 'group-dashboard',
   title: 'Main',
   type: 'group',
   children: [
-    {
+    // Role-based rendering for "Products" based on superAdmin role
+    ...(role === 'super admin' ? [{
       id: 'products',
       title: 'Products',
       type: 'item',
       url: '/products',
       icon: icons.DnsOutlinedIcon,
       breadcrumbs: false,
-    },
+    }] : []),
     {
       id: 'dashboard',
       title: 'Dashboard',
       type: 'item',
-      url: '/dashboard',
+      url: '/',
       icon: icons.HomeOutlinedIcon,
       breadcrumbs: false,
     },
@@ -63,28 +66,20 @@ const dashboard = {
         },
       ],
     },
-    {
+    ...(role !== 'agent' ? [{
       id: 'accounts',
       title: 'Accounts',
       type: 'item',
       url: ['/accounts', '/createUser', 'userProfile/:id'],
       icon: icons.UserOutlined,
       breadcrumbs: false,
-    },
+    }] : []),
     {
       id: 'statements',
       title: 'Statements',
       type: 'item',
       url: ['/statements', '/savedReports'],
       icon: icons.DescriptionOutlinedIcon,
-      breadcrumbs: false,
-    },
-    {
-      id: 'logout',
-      title: 'Logout',
-      type: 'item',
-      icon: icons.LogoutOutlinedIcon,
-      url: '/logout',
       breadcrumbs: false,
     },
   ],

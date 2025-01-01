@@ -1,0 +1,24 @@
+{
+  "appId": "power.com",
+  "appName": "Power",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "F0F8F7",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": true,
+      "spinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#999999",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    }
+  },
+  "server": {
+    "url": "https://power-plum-six.vercel.app/",
+    "cleartext": false
+  }
+}

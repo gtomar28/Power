@@ -14,11 +14,11 @@ const CreatePayOut = Loadable(lazy(() => import('pages/payOutOperations/CreatePa
 const AccountsDefault = Loadable(lazy(() => import('pages/accounts/index')));
 const CreateUserPage = Loadable(lazy(() => import('pages/accounts/CreateUserPage')));
 const ProductsDefault = Loadable(lazy(() => import('pages/products/index')));
+const CreateMerchant = Loadable(lazy(() => import('pages/products/CreateMerchant')));
 const StatementsDefault = Loadable(lazy(() => import('pages/statements/index')));
 const SavedReportsDefault = Loadable(lazy(() => import('pages/statements/SavedReports')));
 const ProfileDefault = Loadable(lazy(() => import('pages/profile/index')));
 const UserProfileDefault = Loadable(lazy(() => import('pages/userProfile/index')));
-
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -27,7 +27,7 @@ const MainRoutes = {
   element: <Dashboard />,
   children: [
     {
-      path: '/dashboard',
+      path: '/',
       element: <DashboardDefault />
     },
     {
@@ -61,6 +61,10 @@ const MainRoutes = {
     {
       path: 'products',
       element: <ProductsDefault />
+    },
+    {
+      path: 'createMerchant',
+      element: <CreateMerchant />
     },
     {
       path: 'statements',

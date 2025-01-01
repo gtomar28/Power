@@ -32,6 +32,25 @@ export default function CreatePayOut() {
     const [ifscError, setIfscError] = useState(false);
     const [ifscIsRequiredError, setIfscIsRequiredError] = useState(false);
 
+    const [clientUPI, setClientUPI] = useState('');
+    const [clientUPIError, setClientUPIError] = useState(false);
+    const [clientUPIIsRequiredError, setClientUPIIsRequiredError] = useState(false);
+
+    const handleClientUPI = (value) => {
+        setClientUPI(value);
+        const bankNameRegex = /^[A-Za-z\s]{2,50}$/;
+        if (value === '') {
+            setClientUPIError(false);
+            setClientUPIIsRequiredError(true);
+        } else if (!bankNameRegex.test(value)) {
+            setClientUPIError(true);
+            setClientUPIIsRequiredError(false);
+        } else {
+            setClientUPIError(false);
+            setClientUPIIsRequiredError(false);
+        }
+    };
+
     const handleAmount = (value) => {
         setAmount(value);
         const indianCurrencyRegex = /^(\₹)?(\d{1,2})(,\d{2})*(\.\d{1,2})?$/;
@@ -102,22 +121,17 @@ export default function CreatePayOut() {
         if (ifsc === '') setIfscIsRequiredError(true);
 
         if (amount && accountNumber && bankName && ifsc) {
+            const data = { account_number: accountNumber, amount: parseFloat(amount), bank_name: bankName, client_upi: clientUPI, ifsc: ifsc };
+            let jsonString = JSON.stringify(data);
+            jsonString = jsonString.replace(/\s+/g, ''); 
 
-            const data = {
-                account_number: accountNumber,           // String
-                amount: parseFloat(amount),              // Float
-                bank_name: bankName,                     // String
-                callback_url: 'https://client-domain.com/api/callback',  // String
-                ifsc: ifsc                               // String
-            };
+            console.log(jsonString, "payload");
 
-            const hmac = CryptoJS.HmacSHA256(JSON.stringify(data), secretKey).toString();
-
+            const hmac = CryptoJS.HmacSHA256(jsonString, secretKey).toString();
             try {
                 setShowLoader(true);
-                const response = await createOrderForPayout(data, hmac);
-                console.log(response, 'Create User');
-                if (response.status === 201) {
+                const response = await createOrderForPayout(JSON.parse(jsonString), hmac);
+                if (response.status === 200) {
                     setAmount('');
                     setAccountNumber('');
                     setBankName('');
@@ -128,9 +142,12 @@ export default function CreatePayOut() {
                 }
             } catch (err) {
                 console.log(err);
+                setShowLoader(false);
             }
         }
     };
+
+
 
 
     return (
@@ -193,6 +210,12 @@ export default function CreatePayOut() {
                                 <OutlinedInput value={accountNumber} onChange={(e) => handleAccountNumber(e.target.value)} variant="outlined" placeholder='' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#fff', border: 'none', borderRadius: '15px', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
                                 <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>IFSC</Typography>
                                 <OutlinedInput value={ifsc} onChange={(e) => handleIfsc(e.target.value)} variant="outlined" placeholder='' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#fff', border: 'none', borderRadius: '15px', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
+                            </Grid>
+                        </Grid>
+                        <Grid item xs={12} md={6} >
+                            <Grid fullWidth sx={{ m: 2 }}>
+                                <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Client UPI</Typography>
+                                <OutlinedInput value={clientUPI} onChange={(e) => handleClientUPI(e.target.value)} variant="outlined" placeholder='' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#fff', border: 'none', borderRadius: '15px', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
                             </Grid>
                         </Grid>
                         <Grid container sx={{ p: 1, m: 2 }}>

@@ -32,7 +32,7 @@ const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
                 <AmountCards
                     title="PayOut Amount"
                     count={`${Statics?.total_payout_amount} INR`}
-                    extra={`Available PayIn Limit: ${Statics?.payout_limit}`}
+                    extra={`Available PayOut Limit: ${Statics?.payout_limit}`}
                     image={walletSettings}
                 />
             </Grid>
@@ -57,10 +57,11 @@ const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
                     selectedAdminIds={selectedAdminIds}
                     onAdminSelect={handleAdminSelect}
                 />
+                
             </Grid>
 
             {/* Stats of Selected Admins */}
-            {role !== 'agent' && 
+            {role === 'super admin' && 
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                     <AdminStats
                         title="Stats of"

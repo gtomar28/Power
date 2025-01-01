@@ -25,7 +25,7 @@ export default function DrawerFooter({ open }) {
         {drawerOpen && (
           <>
             <Typography variant="h6" mt={1} sx={{ textTransform: 'uppercase' }}>
-              {userLocalData?.name}
+              {userLocalData?.name !== '' ? userLocalData?.name : userLocalData?.username}
             </Typography>
             <Typography variant="h6"> 
               {userLocalData?.is_superadmin ? 'Super Admin' : userLocalData?.is_admin ? 'Admin' : userLocalData?.is_creater ? 'Sub Admin' : 'Peer'}

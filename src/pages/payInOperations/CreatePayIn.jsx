@@ -73,7 +73,7 @@ export default function CreatePayIn() {
     };
 
     useEffect(() => {
-        const socket = new WebSocket(`ws://auth2.upicollect.com/ws/order_status/${orderId}/?token=${token}`);
+        const socket = new WebSocket(`wss://auth2.upicollect.com/ws/order_status/${orderId}/?token=${token}`);
         const onSocketMessage = (event) => {
             const data = JSON.parse(event.data);
             console.log(data, "WebSocket Data");

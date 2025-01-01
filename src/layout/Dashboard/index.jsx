@@ -1,6 +1,5 @@
-
 import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 // material-ui
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -32,6 +31,43 @@ export default function DashboardLayout() {
     handlerDrawerOpen(!downXL);
   }, [downXL]);
 
+
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // useEffect(() => {
+  //   if (token) {
+  //     let backButtonListener;
+  //     if (window.Capacitor) {
+  //       import('@capacitor/app').then(({ App }) => {
+  //         backButtonListener = App.addListener('backButton', () => {
+  //           if (location.pathname === '/') {
+  //             App.exitApp();
+  //           } else {
+  //             navigate(-1);
+  //           }
+  //         });
+  //       });
+  //     }
+
+  //     return () => {
+  //       if (backButtonListener) {
+  //         backButtonListener.remove();
+  //       }
+  //     };
+  //   }
+  // }, [token, navigate, location.pathname]);
+
+  const drawerOpen = menuMaster?.isDashboardDrawerOpened || false;
+
+  // Close drawer on route change only for small screens
+  useEffect(() => {
+    if (matchDownMD && drawerOpen) {
+      handlerDrawerOpen(false);
+    }
+  }, [location.pathname, matchDownMD]); // Run on every route change and screen size change
+
   if (menuMasterLoading) return <Loader />;
 
   return (
@@ -58,7 +94,7 @@ export default function DashboardLayout() {
             variant="light"
             sx={{
               color: 'text.primary', bgcolor: menuMaster.isDashboardDrawerOpened ? iconBackColorOpen : iconBackColor,
-              position: menuMaster?.isDashboardDrawerOpened ? 'absolute':'relative', zIndex: 1000000,
+              position: menuMaster?.isDashboardDrawerOpened ? 'absolute' : 'relative', zIndex: 1000000,
               left: menuMaster?.isDashboardDrawerOpened ? '255px' : '2%',
               top: menuMaster?.isDashboardDrawerOpened ? '50px' : '0px',
               transition: 'width 0.3s ease',
@@ -99,92 +135,3 @@ export default function DashboardLayout() {
     </Box>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useEffect, useState } from 'react';
-// import { Outlet } from 'react-router-dom';
-// import useMediaQuery from '@mui/material/useMediaQuery';
-// import Box from '@mui/material/Box';
-// import Drawer from './Drawer';
-// import navigation from 'menu-items';
-// import Loader from 'components/Loader';
-// import Breadcrumbs from 'components/@extended/Breadcrumbs';
-// import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
-
-// export default function DashboardLayout() {
-//   const { menuMasterLoading } = useGetMenuMaster();
-//   const downXL = useMediaQuery((theme) => theme.breakpoints.down('xl'));
-//   const [drawerOpen, setDrawerOpen] = useState(false);
-
-//   useEffect(() => {
-//     setDrawerOpen(menuMasterLoading.isDashboardDrawerOpened);
-//     console.log('drawer open mine useeffect ', drawerOpen)
-//   }, [menuMasterLoading.isDashboardDrawerOpened]);
-
-//   useEffect(() => {
-//     const shouldOpen = !downXL;
-//     setDrawerOpen(shouldOpen);
-//     handlerDrawerOpen(shouldOpen);
-//   }, [downXL]);
-
-//   useEffect(() => {
-//     console.log('drawerOpenVal in dashboard:', drawerOpen);
-//   }, [drawerOpen]);
-
-//   if (menuMasterLoading) return <Loader />;
-
-//   return (
-//     <Box sx={{ display: 'flex', width: '100%' }}>
-//       <Drawer />
-//       <Box
-//         key={drawerOpen ? 'drawer-open' : 'drawer-closed'}
-//         component="main"
-//         sx={{
-//           width: drawerOpen ? 'calc(100% - 260px)' : 'calc(100% - 160px)',
-//           flexGrow: 1,
-//           p: { xs: 2, sm: 3 },
-//           transition: 'width 0.3s ease',
-//         }}
-//       >
-//         <Breadcrumbs navigation={navigation} title />
-//         <Outlet />
-//       </Box>
-//     </Box>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
