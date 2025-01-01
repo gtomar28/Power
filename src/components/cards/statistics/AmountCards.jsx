@@ -63,8 +63,3 @@ AmountCards.propTypes = {
     extra: PropTypes.string,
     image: PropTypes.string,
 };
-
-AmountCards.defaultProps = {
-    extra: '',
-    image: null, // Default to null if no image is provided
-};

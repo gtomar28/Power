@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "860369438600",
+    "project_id": "power-25",
+    "storage_bucket": "power-25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860369438600:android:bf6a54721bab021a131c3d",
+        "android_client_info": {
+          "package_name": "com.power"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaqda_54_xFwGayBGcbSclZWNC-ONAdVU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -28,15 +28,6 @@ export default function DashboardDefault() {
     fetchData()
   }, [])
 
-
-  const handleType = (value) => {
-    setType(value)
-  }
-
-  const handleyear = (value) => {
-    setYear(value)
-  }
-
   const [graphDat, setGraphData] = useState('');
   const [showLoader, setShowLoader] = useState(false);
 
@@ -44,7 +35,6 @@ export default function DashboardDefault() {
     try {
       setShowLoader(true);
       const orderResponse = await graphData(year, type);
-      console.log(orderResponse, "OrderGraphData")
       if (orderResponse?.status === 200)
         setShowLoader(false);
       setGraphData(orderResponse?.data?.graph_data);

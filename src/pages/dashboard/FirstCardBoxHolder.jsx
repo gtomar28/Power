@@ -7,7 +7,6 @@ import AdminStats from "components/cards/statistics/AdminStats";
 import AdminCount from "components/cards/statistics/AdminCount";
 
 const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
-    console.log(adminDetails, "adminDetails");
     const role = localStorage.getItem('role')
     // State for selected admin IDs
     const [selectedAdminIds, setSelectedAdminIds] = useState({});
@@ -39,13 +38,13 @@ const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
             <Grid item xs={12} sm={6} md={6} lg={6}>
                 <AnalyticEcommerce
                     title="Total number of PayIn"
-                    count={Statics?.total_payin_count}
+                    count={`${Statics?.total_payin_count}`}
                 />
             </Grid>
             <Grid item xs={12} sm={6} md={6} lg={6}>
                 <AnalyticEcommerce
                     title="Total number of PayOut"
-                    count={Statics?.total_payout_count}
+                    count={`${Statics?.total_payout_count}`}
                 />
             </Grid>
 

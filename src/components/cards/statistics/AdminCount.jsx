@@ -7,7 +7,6 @@ import CircleIcon from "@mui/icons-material/Circle";
 
 export default function AdminCount({ title, items, selectedAdminIds, onAdminSelect }) {
     
-    console.log(items)
     const role = localStorage.getItem('role')
     const [anchorEl, setAnchorEl] = useState({});
     const [selectedAdmins, setSelectedAdmins] = useState({});

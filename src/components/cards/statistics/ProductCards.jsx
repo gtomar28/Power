@@ -4,31 +4,7 @@ export default function ProductCards({ Statics, clientDetail }) {
     return (
         <Grid container spacing={3} >
             {/* Total Revenue Card */}
-            <Grid item xs={12} md={4} sx={{
-                position: "relative",
-                display: "inline-block",
-            }}>
-                {/* Top Card */}
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: "-10px",
-                        left: "0px",
-                        width: 'fit-content',
-                        backgroundColor: "#fff",
-                        borderRadius: "10px",
-                        boxShadow: "0 6px 12px rgba(0, 0, 0, 0.2)",
-                        zIndex: 1,
-                        padding: "16px",
-                    }}
-                >
-                    <Typography
-                        variant="h4"
-                    >
-                        Total Revenue: INR {Statics?.wallet}
-                    </Typography>
-                </Box>
-
+            <Grid item xs={12} md={4}>
                 {/* Bottom Card */}
                 <Card
                     sx={{
@@ -36,7 +12,8 @@ export default function ProductCards({ Statics, clientDetail }) {
                         height: '100%',
                         borderRadius: "10px",
                         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                        alignContent: 'center'
+                        alignContent: 'center',
+                        border: '1px solid #E3E3E3'
                     }}
                 >
                     <CardContent>
@@ -88,7 +65,7 @@ export default function ProductCards({ Statics, clientDetail }) {
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={8}>
-                                        <Typography component="span" sx={{ fontWeight: 'bold' }}>INR 21,00,000</Typography>
+                                        <Typography component="span" sx={{ fontWeight: 'bold' }}>INR {Statics?.total_payout_amount + Statics?.total_payin_amount}</Typography>
                                     </Grid>
                                 </Grid>
                             </Grid>
