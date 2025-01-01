@@ -150,8 +150,6 @@ export default function AccountsDefault() {
                                                 '& .MuiTabs-indicator': { backgroundColor: 'transparent' },
                                             }}>
                                                 <Tab label="All" value="All" onClick={() => { setStatusVal(''); setRoleVal(''); }} />
-                                                {/* <Tab label="PayIn" value="2" onClick={() => { setRoleVal(''); setStatusVal('payIn') }} />
-                                        <Tab label="PayOut" value="3" onClick={() => { setRoleVal(''); setStatusVal('PayOut') }} /> */}
                                             </TabList>
                                         }
                                     </Grid>
@@ -168,7 +166,7 @@ export default function AccountsDefault() {
                                             backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', border: 'none', outline: 'none',
                                             '&:hover, &:active, &:focus': { backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
                                         }}>
-                                            + Generate Report
+                                            {menuScreenSize ? '+ Generate Report' :' + '}
                                         </Button>
                                     </Grid>
                                 </Grid>
