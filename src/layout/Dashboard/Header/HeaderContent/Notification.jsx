@@ -118,17 +118,6 @@ export default function Notification() {
                   elevation={0}
                   border={false}
                   content={false}
-                  secondary={
-                    <>
-                      {read > 0 && (
-                        <Tooltip title="Mark all as read">
-                          {/* <IconButton color="success" size="small" onClick={markAllRead}>
-                            <CheckCircleOutlined style={{ fontSize: '1.15rem' }} />
-                          </IconButton> */}
-                        </Tooltip>
-                      )}
-                    </>
-                  }
                   sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
                   {notifications.length > 0 ? (
                     <List component="nav" sx={{ p: 0, bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >

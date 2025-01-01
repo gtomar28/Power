@@ -50,6 +50,10 @@ export default function AuthLogin({ isDemo = false }) {
     }
   }, []);
 
+  useEffect(() => {
+    userSuccess(tokenData);
+  }, [tokenData])
+  
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
