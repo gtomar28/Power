@@ -323,10 +323,13 @@ import bellNotification from 'assets/images/bellNotification.svg';
 // project import
 import MainCard from 'components/MainCard';
 import Transitions from 'components/@extended/Transitions';
-
-// assets
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { Badge } from '@mui/material';
+
+
+// Notification 
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
+
 
 export default function Notification() {
   const theme = useTheme();
@@ -436,6 +439,43 @@ export default function Notification() {
 
     return () => wsPayout.close(); // Cleanup WebSocket on component unmount
   }, [role, bio?.id, token]);
+
+
+
+
+  // notification
+  useEffect(() => {
+    if (Capacitor.getPlatform() !== 'web') {
+      // Request permission for push notifications
+      PushNotifications.requestPermission().then((result) => {
+        if (result.granted) {
+          // Register for push notifications if permission is granted
+          PushNotifications.register();
+        } else {
+          console.log('Push notification permission denied');
+        }
+      });
+
+      // Handle push notifications
+      PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('Push notification received:', notification);
+        setNotifications((prev) => [
+          ...prev,
+          { title: 'Push Notification', message: notification.body },
+        ]);
+        setUnreadCount((prev) => (prev || 0) + 1);
+      });
+
+      PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+        console.log('Push notification action performed:', notification);
+      });
+
+      // Cleanup listeners on unmount
+      return () => {
+        PushNotifications.removeAllListeners();
+      };
+    }
+  }, []);
 
 
 
