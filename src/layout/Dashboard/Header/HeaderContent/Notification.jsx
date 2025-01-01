@@ -140,8 +140,6 @@ export default function Notification() {
 
   // notification
 
-
-  // Create notification channel on Android
   const createNotificationChannel = () => {
     if (Capacitor.getPlatform() === 'android') {
       PushNotifications.createChannel({
@@ -157,21 +155,23 @@ export default function Notification() {
     }
   };
 
-
-  
   useEffect(() => {
     createNotificationChannel();
 
     if (Capacitor.getPlatform() !== 'web') {
-      // Request permission for push notifications
-      PushNotifications.requestPermission().then((result) => {
-        if (result.granted) {
-          // Register for push notifications if permission is granted
-          PushNotifications.register();
-        } else {
-          console.log('Push notification permission denied');
-        }
-      });
+      // Request permission for push notifications only on Android and iOS
+      if (Capacitor.getPlatform() === 'android' || Capacitor.getPlatform() === 'ios') {
+        PushNotifications.requestPermission().then((result) => {
+          if (result.granted) {
+            // Register for push notifications if permission is granted
+            PushNotifications.register();
+          } else {
+            console.log('Push notification permission denied');
+          }
+        }).catch((error) => {
+          console.error('Error requesting push notification permission:', error);
+        });
+      }
 
       // Handle push notifications
       PushNotifications.addListener('pushNotificationReceived', (notification) => {
@@ -203,7 +203,6 @@ export default function Notification() {
       };
     }
   }, []);
-
 
 
 
