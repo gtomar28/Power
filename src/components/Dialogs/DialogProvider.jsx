@@ -14,6 +14,9 @@ const DialogContext = createContext();
 export const useDialog = () => useContext(DialogContext);
 
 export const DialogProvider = ({ children }) => {
+
+
+  // const token = JSON.parse(localStorage.getItem('assigned_data'));
   const [data, setData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);

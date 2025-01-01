@@ -162,7 +162,7 @@ export default function AccountsDefault() {
                                             Saved Reports
                                         </Button>
                                         <Button onClick={openDialog} disableRipple sx={{
-                                            minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 4, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
+                                            minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 2, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
                                             backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', border: 'none', outline: 'none',
                                             '&:hover, &:active, &:focus': { backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
                                         }}>
