@@ -153,7 +153,7 @@ export default function AccountsDefault() {
                                             </TabList>
                                         }
                                     </Grid>
-                                    <Grid item xs={7} md={6} display='flex' justifyContent='end' alignItems='center'>
+                                    <Grid item xs={7} md={6} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-end' }, alignItems: 'center', flexWrap: 'wrap', }}>
                                         <Button component={Link} to='/savedReports' disableRipple sx={{
                                             minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 3.5, mx: 0.5, py: 0.9, fontSize: '14px', fontWeight: 500,
                                             backgroundColor: 'none', border: '1px solid #2C6DB5', color: '#2C6DB5', boxShadow: 'none',
@@ -166,7 +166,8 @@ export default function AccountsDefault() {
                                             backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', border: 'none', outline: 'none',
                                             '&:hover, &:active, &:focus': { backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
                                         }}>
-                                            {menuScreenSize ? '+ Generate Report' :' + '}
+                                            {/* { !menuScreenSize ? '+ Generate Report' :' + '} */}
+                                            + Generate Report
                                         </Button>
                                     </Grid>
                                 </Grid>
