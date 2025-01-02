@@ -15,7 +15,7 @@ export default function PayOutOperationsDefault() {
     const [value, setValue] = React.useState('');
 
     const userLocalData = JSON.parse(localStorage.getItem('assigned_data'));
-
+    const role = localStorage.getItem('role')
     const [updateData, setupdateData] = useState(false);
     const [showLoader, setShowLoader] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -225,13 +225,15 @@ export default function PayOutOperationsDefault() {
                                         }
                                     </Grid>
                                     <Grid item xs={7} md={4} display='flex' justifyContent='end' alignItems='center' >
-                                        <Button component={Link} to='/createPayOutOperations' disableRipple sx={{
-                                            minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 4, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
-                                            backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', border: 'none', outline: 'none',
-                                            '&:hover, &:active, &:focus': { backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
-                                        }}>
-                                            + Create PayOut Order
-                                        </Button>
+                                        {role === 'admin' && 
+                                            <Button component={Link} to='/createPayOutOperations' disableRipple sx={{
+                                                minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 4, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
+                                                backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', border: 'none', outline: 'none',
+                                                '&:hover, &:active, &:focus': { backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
+                                            }}>
+                                                + Create PayOut Order
+                                            </Button>
+                                        }
                                         <Grid position='relative'>
                                             {menuScreenSize && (
                                                 <Button disableRipple sx={{ minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 1.2, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500, backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', border: 'none', outline: 'none', '&:hover, &:active, &:focus': { backgroundColor: '#DDE7F3', color: '#2C6DB5', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' }, }} onClick={handleSearchClick} >

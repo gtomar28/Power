@@ -41,6 +41,17 @@ export default function CreateMerchant() {
     const userLocalData = JSON.parse(localStorage.getItem('assigned_data'));
     console.log(userLocalData)
 
+    const [merchantData, setMerchantData] = useState({
+        'ID': '',
+        'Name': '',
+        "Phone Number": '',
+        "Email ID": '',
+        'Domain': '',
+        "API Key": '',
+        'Active': '',
+        "Created At": '',
+    })
+
     const onSubmit = async (data) => {
         const jsonData = {
             "name": data?.name,
@@ -59,6 +70,16 @@ export default function CreateMerchant() {
                     setOpenDialog(false)
                     navigate('/products')
                 }, 5000);
+                setMerchantData({
+                    'ID': response?.data?.client?.id,
+                    'Name': response?.data?.client?.name,
+                    "Phone Number": response?.data?.client?.phone_number,
+                    "Email ID": response?.data?.client?.email,
+                    'Domain': response?.data?.client?.domain,
+                    "API Key": response?.data?.client?.api_key,
+                    'Active': response?.data?.client?.is_active ? 'True' : 'False',
+                    "Created At": response?.data?.client?.created_at,
+                })
             }
             else {
                 toast.error('Facing some issue');
@@ -77,17 +98,6 @@ export default function CreateMerchant() {
     }
 
     const phoneNo = watch('phone_number')
-    
-    const userData = {
-        'ID': 25,
-        'Name': "Client Name",
-        "Phone Number": "8201943123",
-        "Email ID": "clashkav327@gmail.com",
-        'Domain': "www.abc.com",
-        "API Key": "7324a848-52bb-47d8-92a3-ac1dc503b517",
-        'Active': 'True',
-        "Created At": "2024-12-27T04:00:14",
-    };
 
     const theme = useTheme();
     const isXsScreen = useMediaQuery(theme.breakpoints.only('xs'));
@@ -170,7 +180,7 @@ export default function CreateMerchant() {
                                             </Typography>
                                         )}
                                         <Typography variant="caption" sx={{ color: '#EF9644' }}>
-                                            Number should be linked with bank
+                                            Note: Number should be linked with bank
                                         </Typography>
                                     </Stack>
                                 </Grid>
@@ -249,7 +259,7 @@ export default function CreateMerchant() {
                             backgroundColor: '#fff',
                         }}
                     >
-                        {Object.entries(userData).map(([key, value]) => (
+                        {Object.entries(merchantData).map(([key, value]) => (
                             <>
                                 <Grid item xs={4} key={key}>
                                     <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'start' }}>

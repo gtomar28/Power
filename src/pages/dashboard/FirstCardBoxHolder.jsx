@@ -23,7 +23,7 @@ const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
                 <AmountCards
                     title="PayIn Amount"
                     count={`${Statics?.total_payin_amount} INR`}
-                    extra={`Available PayIn Limit: ${Statics?.payin_limit}`}
+                    extra={`Available Limit: ${Statics?.payin_limit}`}
                     image={walletSettings}
                 />
             </Grid>
@@ -31,7 +31,7 @@ const FirstCardBoxHolder = ({ Statics, adminDetails }) => {
                 <AmountCards
                     title="PayOut Amount"
                     count={`${Statics?.total_payout_amount} INR`}
-                    extra={`Available PayIn Limit: ${Statics?.payout_limit}`}
+                    extra={`Available Limit: ${Statics?.payout_limit}`}
                     image={walletSettings}
                 />
             </Grid>

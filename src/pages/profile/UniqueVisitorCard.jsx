@@ -22,7 +22,7 @@ export default function UniqueVisitorCard({ data }) {
   return (
     <>
       <MainCard content={false} sx={{ p: 2, pb: 0 }}>
-        <Typography variant="h6" sx={{ fontWeight: 900, color: '#676767' }}>
+        <Typography variant="h6" sx={{ fontWeight: 900, color: '#676767', ml:0.6 }}>
           Commission Percentage
         </Typography>
         <Box sx={{ pt: 0.6 }}>
@@ -30,7 +30,7 @@ export default function UniqueVisitorCard({ data }) {
             <CommissionPercentage data={percentageData} />
           </MainCard>
         </Box>
-        <Grid item xs={12} md={12} lg={12} sx={{ display: 'flex', m: 1, p: 1.8, backgroundColor: '#F2F6FC', border: '1px solid #E5EEF7', borderRadius: '8px' }}>
+        <Grid item xs={12} md={12} lg={12} sx={{ display: 'flex', m: 0.6, p: 1.8, backgroundColor: '#F2F6FC', border: '1px solid #E5EEF7', borderRadius: '8px' }}>
           <Typography variant="h6" sx={{ fontWeight: 900, color: '#676767', flexGrow: 1 }}>
             Wallet
           </Typography>

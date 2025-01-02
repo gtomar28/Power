@@ -356,14 +356,14 @@ export default function CreateUserPage() {
                                 <Grid container rowSpacing={2}>
                                     <Grid item xs={12} >
                                         <Typography variant="h5">
-                                            Bank Details
+                                            Bank Details {selectedRole === 'creator' && '(Optional)' }
                                         </Typography>
                                         <Grid container rowSpacing={1} columnSpacing={1.5} sx={{ backgroundColor: '#F6F8FC', borderRadius: '15px', p: 1, mt: 2 }}>
                                             <Grid item xs={12} md={12}>
                                                 <Stack spacing={1}>
                                                     <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>UPI ID</Typography>
                                                     <OutlinedInput
-                                                        {...register('upi_id', { required: 'UPI ID is required', pattern: { value: /^[a-zA-Z0-9.\-_]+@[a-zA-Z]+$/, message: 'Invalid UPI ID format' } })}
+                                                        {...register('upi_id', { required: selectedRole === 'creator' ? false : 'UPI ID is required', pattern: { value: /^[a-zA-Z0-9.\-_]+@[a-zA-Z]+$/, message: 'Invalid UPI ID format' } })}
                                                         placeholder="Enter your UPI ID"
                                                         sx={inputStyles(errors.upi_id)}
                                                     />
@@ -378,7 +378,7 @@ export default function CreateUserPage() {
                                                 <Stack spacing={1}>
                                                     <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Bank Name</Typography>
                                                     <OutlinedInput
-                                                        {...register('bank_name', { required: 'Bank Name is required' })}
+                                                        {...register('bank_name', { required: selectedRole === 'creator' ? false : 'Bank Name is required' })}
                                                         placeholder="Enter your bank name"
                                                         sx={inputStyles(errors.bank_name)}
                                                     />
@@ -393,7 +393,7 @@ export default function CreateUserPage() {
                                                 <Stack spacing={1}>
                                                     <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Branch Name</Typography>
                                                     <OutlinedInput
-                                                        {...register('branch_name', { required: 'Branch Name is required' })}
+                                                        {...register('branch_name', { required: selectedRole === 'creator' ? false : 'Branch Name is required' })}
                                                         placeholder="Enter your branch name"
                                                         sx={inputStyles(errors.branch_name)}
                                                     />
@@ -408,7 +408,7 @@ export default function CreateUserPage() {
                                                 <Stack spacing={1}>
                                                     <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Account Number</Typography>
                                                     <OutlinedInput
-                                                        {...register('bank_account_number', { required: 'Account Number is required', pattern: { value: /^[0-9]{9,18}$/, message: 'Account Number must be 9-18 digits' } })}
+                                                        {...register('bank_account_number', { required: selectedRole === 'creator' ? false : 'Account Number is required', pattern: { value: /^[0-9]{9,18}$/, message: 'Account Number must be 9-18 digits' } })}
                                                         placeholder="Enter your account number"
                                                         sx={inputStyles(errors.bank_account_number)}
                                                     />
@@ -423,7 +423,7 @@ export default function CreateUserPage() {
                                                 <Stack spacing={1}>
                                                     <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>IFSC</Typography>
                                                     <OutlinedInput
-                                                        {...register('IFSC', { required: 'IFSC is required', pattern: { value: /^[A-Z]{4}0[A-Z0-9]{6}$/, message: 'Invalid IFSC code' } })}
+                                                        {...register('IFSC', { required: selectedRole === 'creator' ? false : 'IFSC is required', pattern: { value: /^[A-Z]{4}0[A-Z0-9]{6}$/, message: 'Invalid IFSC code' } })}
                                                         placeholder="Enter your IFSC code"
                                                         sx={inputStyles(errors.IFSC)}
                                                     />
@@ -438,7 +438,7 @@ export default function CreateUserPage() {
                                                 <Stack spacing={1}>
                                                     <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Account Holder Name</Typography>
                                                     <OutlinedInput
-                                                        {...register('accountHolderName', { required: 'Account Holder Name is required' })}
+                                                        {...register('accountHolderName', { required: selectedRole === 'creator' ? false : 'Account Holder Name is required' })}
                                                         placeholder="Enter account holder name"
                                                         sx={inputStyles(errors.accountHolderName)}
                                                     />

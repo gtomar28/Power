@@ -16,11 +16,12 @@ import HashLoader from 'components/HashLoader';
 import NoDataFound from 'assets/images/noDataFound.svg'
 
 export default function PayInOperationData({ data, onSendStatusCode }) {
+
     const [openDeclineModal, setOpenDeclineModal] = React.useState(false);
     const [openApproveModal, setOpenApproveModal] = React.useState(false);
     const [OrdersIds, setOrdersIds] = React.useState()
     const [openUTRSlip, setOpenUTRSlip] = React.useState(false);
-
+    const role = localStorage.getItem('role');
 
     const handleApprovedOrder = (val, id) => {
         setOrdersIds(id);

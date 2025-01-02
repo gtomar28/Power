@@ -1,12 +1,9 @@
-
-
-
 import React, { createContext, useContext, useState } from "react";
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogTitle, DialogContent, Button, Typography, IconButton, Grid, OutlinedInput, Stack, MenuItem, Select, Checkbox, ListItemText } from "@mui/material";
 import LinearProgress from '@mui/material/LinearProgress';
 import { useForm } from "react-hook-form";
-import { generateReport, getAllUsers, getAllUsersData } from "api/api";
+import { Downloadreport, generateReport, getAllUsers, getAllUsersData } from "api/api";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const DialogContext = createContext();
@@ -14,19 +11,24 @@ const DialogContext = createContext();
 export const useDialog = () => useContext(DialogContext);
 
 export const DialogProvider = ({ children }) => {
-
-
-  // const token = JSON.parse(localStorage.getItem('assigned_data'));
   const [data, setData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [progress, setProgress] = useState(0);
   const [selectedAccounts, setSelectedAccounts] = useState([]);
-
+  console.log(selectedAccounts)
   const [excelData, setExcelData] = useState();
+  const [progressCompleted, setProgressCompleted] = useState(false);
+
+  const role = localStorage.getItem('role')
+  const agentId = localStorage.getItem('id')
 
   const openDialog = () => setIsOpen(true);
-  const closeDialog = () => setIsOpen(false);
+  const closeDialog = () => {
+    setIsOpen(false);
+    setIsGenerated(false);
+    setProgressCompleted(false)
+  }
 
   const {
     register,
@@ -54,20 +56,28 @@ export const DialogProvider = ({ children }) => {
     }
   };
 
-
   const handleChange = (event) => {
     const { value } = event.target;
-    setSelectedAccounts(
-      typeof value === 'string' ? value.split(',') : value
-    );
+    if (value.includes('all')) {
+      if (selectedAccounts[0] === 'all') {
+        setSelectedAccounts([]);
+      } else {
+        setSelectedAccounts(['all']);
+      }
+    } else {
+      const filteredValues = value.filter((val) => val !== 'all');
+      setSelectedAccounts(filteredValues);
+    }
   };
+
+
 
   const onSubmit = async (data) => {
     const reportData = {
       report_name: data.reportName,
       type: data.type,
-      amount: data.amount,
-      accounts: '29',
+      amount: parseInt(data.amount),
+      accounts: role === 'agent' ? parseInt(agentId) : selectedAccounts.includes('all') ? 'all' : selectedAccounts.toString(),
       start_date: data.startDate,
       end_date: data.endDate,
     };
@@ -77,34 +87,41 @@ export const DialogProvider = ({ children }) => {
       console.log(response, "generate");
       if (response?.status === 201) {
         console.log("Report Created Successfully");
-        setIsGenerated(true);
         setExcelData(response?.data?.excel);
-        setSelectedAccounts([]); // Clear selected accounts
+        setSelectedAccounts([]);
+        setIsGenerated(true);
+
+        // Start Progress Simulation
+        setProgress(0);
+        const interval = setInterval(() => {
+          setProgress((prev) => {
+            if (prev >= 100) {
+              clearInterval(interval);
+              setProgressCompleted(true);
+              return 100;
+            }
+            return prev + 5;
+          });
+        }, 500);
       }
     } catch (err) {
       console.error(err);
-      // toast.error(err?.response?.data?.message || "Error generating report");
     }
   };
-  
 
   const handleDownloadClick = () => {
+    const byteCharacters = atob(excelData);
+    const byteNumbers = new Array(byteCharacters.length).fill().map((_, i) => byteCharacters.charCodeAt(i));
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-    // Create a Blob from the base64 string
-    const blob = new Blob([atob(excelData)], { type: 'application/octet-stream' });
-
-    // Create a URL for the Blob
-    const url = window.URL.createObjectURL(blob);
-
-    // Create a temporary anchor element
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = 'Generated_Report.xlsx'; // Name of the downloaded file
-    anchor.target = '_blank'; // Open in a new tab
-    anchor.click();
-
-    // Cleanup
-    window.URL.revokeObjectURL(url);
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = 'Report.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
 
@@ -165,9 +182,9 @@ export const DialogProvider = ({ children }) => {
                       <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Type</Typography>
                       <Select {...register('type', { required: 'Type is required', })} defaultValue="" displayEmpty IconComponent={(props) => (<ArrowDropDownIcon {...props} sx={{ backgroundColor: '#E4EDF6', color: '#2C6DB5 !important', borderRadius: '6px' }} />)} sx={{ width: '100%', backgroundColor: '#fff', borderRadius: '15px', height: '40px', fontSize: '14px', padding: '0px', border: errors.type ? '1px solid #ff4d4f' : '1px solid #e0e0e0', '&.Mui-focused': { borderColor: errors.type ? '#ff4d4f' : '#e0e0e0', boxShadow: 'none', border: 'none' }, '&:hover': { borderColor: errors.type ? '#ff4d4f' : '#e0e0e0', border: 'none' }, }} >
                         <MenuItem value="" disabled>Select type</MenuItem>
+                        <MenuItem value="All">All</MenuItem>
                         <MenuItem value="PayIn">PayIn</MenuItem>
                         <MenuItem value="PayOut">PayOut</MenuItem>
-                        <MenuItem value="Wallet">Wallet</MenuItem>
                       </Select>
                       {errors.type && (
                         <Typography color="error" variant="caption">
@@ -191,24 +208,30 @@ export const DialogProvider = ({ children }) => {
                   </Grid>
 
                   {/* Accounts Dropdown */}
-                  <Grid item xs={12}>
-                    <Stack spacing={1}>
-                      <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Accounts</Typography>
-                      <Select multiple value={selectedAccounts} onChange={handleChange} input={<OutlinedInput />} renderValue={(selected) => selected.length > 0 ? selected.join(', ') : 'Select account'} IconComponent={(props) => (<ArrowDropDownIcon {...props} sx={{ color: '#2C6DB5' }} />)} sx={{ width: '100%', backgroundColor: '#fff', borderRadius: '15px', height: '40px' }} >
-                        {data && data.map((account) => (
-                          <MenuItem key={account?.id} value={account?.id}>
-                            <Checkbox checked={selectedAccounts.includes(account?.id)} />
-                            <ListItemText primary={account?.username} />
+                  {role !== 'agent' &&
+                    <Grid item xs={12}>
+                      <Stack spacing={1}>
+                        <Typography sx={{ color: '#929292', fontWeight: 'bold' }}>Accounts</Typography>
+                        <Select multiple value={selectedAccounts} onChange={handleChange} input={<OutlinedInput />} renderValue={(selected) => selected.length > 0 ? selected.join(', ') : 'Select account'} IconComponent={(props) => (<ArrowDropDownIcon {...props} sx={{ color: '#2C6DB5' }} />)} sx={{ width: '100%', backgroundColor: '#fff', borderRadius: '15px', height: '40px' }} >
+                          <MenuItem key='all' value='all'>
+                            <Checkbox checked={selectedAccounts[0] === 'all'} />
+                            <ListItemText primary='Select All' />
                           </MenuItem>
-                        ))}
-                      </Select>
-                      {errors.accounts && (
-                        <Typography color="error" variant="caption">
-                          {errors.accounts.message}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
+                          {data && data.map((account) => (
+                            <MenuItem key={account?.id} value={account?.id} disabled={selectedAccounts[0] === 'all'}>
+                              <Checkbox checked={selectedAccounts.includes(account?.id)} />
+                              <ListItemText primary={account?.username} />
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {errors.accounts && (
+                          <Typography color="error" variant="caption">
+                            {errors.accounts.message}
+                          </Typography>
+                        )}
+                      </Stack>
+                    </Grid>
+                  }
 
                   {/* Date Range */}
                   <Grid item xs={12}>
@@ -249,17 +272,14 @@ export const DialogProvider = ({ children }) => {
                   <Typography align="center" sx={{ color: '#929292' }}>Your Report is being processed. Please do not refresh or close this page until the process is complete. This may take a few moments.</Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <LinearProgress variant="determinate" value={progress} sx={{ m: 10 }} />
+                  <LinearProgress variant="determinate" value={progress} sx={{ m: 2, height: 10, borderRadius: 5 }} />
                 </Grid>
+
 
                 <Grid container>
                   <Grid item xs={3}></Grid>
                   <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                    <Button onClick={handleDownloadClick} disableRipple sx={{
-                      minWidth: '100%', textTransform: 'none', borderRadius: '32px', px: 5, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
-                      backgroundColor: '#808080', color: '#fff', boxShadow: 'none', border: 'none', outline: 'none',
-                      '&:hover, &:active, &:focus': { backgroundColor: '#808080', color: '#fff', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
-                    }}>
+                    <Button onClick={handleDownloadClick} disabled={!progressCompleted} disableRipple sx={{ minWidth: '100%', textTransform: 'none', borderRadius: '32px', px: 5, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500, backgroundColor: isGenerated ? '#2C6DB5' : '#808080', color: '#fff', boxShadow: 'none', border: 'none', outline: 'none', '&:hover': { backgroundColor: isGenerated ? '#2C6DB5' : '#808080', }, }} >
                       Download Report
                     </Button>
                   </Grid>
@@ -268,7 +288,7 @@ export const DialogProvider = ({ children }) => {
                 <Grid container>
                   <Grid item xs={3}></Grid>
                   <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                    <Button onClick={() => setIsGenerated(false)} disableRipple sx={{
+                    <Button onClick={closeDialog} disableRipple sx={{
                       minWidth: '100%', textTransform: 'none', borderRadius: '32px', px: 5, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
                       backgroundColor: '#808080', color: '#fff', boxShadow: 'none', border: 'none', outline: 'none',
                       '&:hover, &:active, &:focus': { backgroundColor: '#808080', color: '#fff', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
@@ -281,9 +301,7 @@ export const DialogProvider = ({ children }) => {
               </Grid>
 
             }
-
           </DialogContent>
-
         </Grid>
       </Dialog >
     </DialogContext.Provider >

@@ -11,7 +11,7 @@ export default function CommissionPercentage({ data }) {
             {data && data.length > 0 && (
                 <Grid sx={{ display: 'flex', p: 0 }}>
                     {data.map((item, index) => (
-                        <Grid key={index} item xs={12} md={6} lg={6} sx={{ display: 'flex', m: 1, py: 1.8, px:1.3, backgroundColor: '#F2F6FC', border: '1px solid #E5EEF7', borderRadius: '8px' }}>
+                        <Grid key={index} item xs={12} md={6} lg={6} sx={{ display: 'flex', m: 0.6, py: 1.8, px:1.3, backgroundColor: '#F2F6FC', border: '1px solid #E5EEF7', borderRadius: '8px' }}>
                             <Typography variant="h6" sx={{ fontWeight: 900, color: '#676767', flexGrow: 1 }}>
                                 {item.name}
                             </Typography>

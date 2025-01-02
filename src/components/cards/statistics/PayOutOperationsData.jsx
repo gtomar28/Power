@@ -41,6 +41,8 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
     const [Price, setPrice] = useState();
     const [userOnine, setuserOnine] = useState();
 
+    const role = localStorage.getItem('role')
+
     const handleUTR = (value) => {
         setutr(value);
         const rex = /^[A-Za-z0-12]{10,20}$/;
@@ -102,6 +104,7 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
 
         if (utr && remark && image) {
             const formData = new FormData();
+            { role === 'agent' && (formData.append('action', 'SUBMIT')) };
             formData.append('utr', utr);
             formData.append('upload_slip', image);
             formData.append('remark', remark);
@@ -433,7 +436,13 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                 disableRipple
                                                 onClick={() => {
                                                     modalFlow(row?.id, row?.order_id, row?.payment_amount);
-                                                    setUserStatus(row?.approval_status);
+                                                    setUserStatus(
+                                                        role !== 'agent'
+                                                            ?
+                                                            (row?.approval_status === 'CREATED' ? 'ASSIGN' : row?.approval_status === 'ASSIGNED' ? 'ASSIGNED' : row?.approval_status === 'SUBMITTED' ? 'SUBMITTED' : 'APPROVED')
+                                                            :
+                                                            (row?.approval_status === 'CREATED' ? 'SUBMIT' : row?.approval_status === 'SUBMITTED' ? 'PROCESSING' : 'APPROVED')
+                                                    );
                                                 }}
                                                 disabled={row?.approval_status === "APPROVED"} // Disable button when status is APPROVED
                                                 sx={{
@@ -444,19 +453,23 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                     py: 0.5,
                                                     fontSize: '14px',
                                                     fontWeight: 500,
-                                                    backgroundColor: row?.approval_status === 'CREATED' ? '#E6B400'
-                                                        : row?.approval_status === 'ASSIGNED' ? '#2C6DB5'
-                                                            : row?.approval_status === "APPROVED" ? '#22C55D'
-                                                                : '#2C6DB51F',
+                                                    backgroundColor:
+                                                        row?.approval_status === 'CREATED' ? role !== 'agent' ? '#2C6DB5' : '#5B3CA1'
+                                                            : row?.approval_status === 'ASSIGNED' ? '#2C6DB5'
+                                                                : row?.approval_status === 'SUBMITTED' ? '#E6B400'
+                                                                    : row?.approval_status === "APPROVED" ? '#22C55D'
+                                                                        : '#2C6DB51F',
                                                     color: '#fff',
                                                     boxShadow: 'none',
                                                     border: 'none',
                                                     outline: 'none',
-                                                    '&:hover, &:active, &:focus': {
-                                                        backgroundColor: row?.approval_status === 'CREATED' ? '#E6B400'
-                                                            : row?.approval_status === 'ASSIGNED' ? '#2C6DB5'
-                                                                : row?.approval_status === "APPROVED" ? '#22C55D'
-                                                                    : '#2C6DB51F',
+                                                    '&:hover, &:active, &:focus, &:disabled': {
+                                                        backgroundColor:
+                                                            row?.approval_status === 'CREATED' ? role !== 'agent' ? '#2C6DB5' : '#5B3CA1'
+                                                                : row?.approval_status === 'ASSIGNED' ? '#2C6DB5'
+                                                                    : row?.approval_status === 'SUBMITTED' ? '#E6B400'
+                                                                        : row?.approval_status === "APPROVED" ? '#0e9c42'
+                                                                            : '#2C6DB51F',
                                                         color: 'white',
                                                         boxShadow: 'none',
                                                     },
@@ -466,7 +479,12 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                     },
                                                 }}
                                             >
-                                                {row?.approval_status}
+                                                {role !== 'agent'
+                                                    ?
+                                                    (row?.approval_status === 'CREATED' ? 'ASSIGN' : row?.approval_status === 'ASSIGNED' ? 'ASSIGNED' : row?.approval_status === 'SUBMITTED' ? 'SUBMITTED' : 'APPROVED')
+                                                    :
+                                                    (row?.approval_status === 'CREATED' ? 'SUBMIT' : row?.approval_status === 'SUBMITTED' ? 'PROCESSING' : 'APPROVED')
+                                                }
                                             </Button>
 
                                         </Grid>
@@ -475,6 +493,8 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                             </Grid>
                         </Grid >
                     ))}
+
+
                     {/* Approve MOdal */}
                     <Dialog
                         onClose={() => setOpenSubmittedModal(false)}
@@ -626,6 +646,8 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                             }
                         </DialogContent>
                     </Dialog>
+
+
                     {/* Approve MOdal */}
                     <Dialog
                         onClose={() => setOpenApproveModal(false)}

@@ -1,5 +1,4 @@
-
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Button, Tab, CircularProgress, useMediaQuery, IconButton, Menu, MenuItem, Select } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid } from '@mui/material';
@@ -24,11 +23,34 @@ import { getAllUsers } from 'api/api';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import NoDataFound from 'assets/images/noDataFound.svg'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import BlockIcon from '@mui/icons-material/Block';
+
+const ITEM_HEIGHT = 48;
+
+const options = [
+    'None',
+    'Atria',
+    'Callisto',
+    'Dione',
+    'Ganymede',
+    'Hangouts Call',
+    'Luna',
+    'Oberon',
+    'Phobos',
+    'Pyxis',
+    'Sedna',
+    'Titania',
+    'Triton',
+    'Umbriel',
+];
 
 export default function AccountsDefault() {
 
     const userLocalData = JSON.parse(localStorage.getItem('assigned_data'));
-    const role = localStorage.getItem('role')
+    const role = localStorage.getItem('role');
+
+
 
     const navigate = useNavigate()
     const [value, setValue] = React.useState("All");
@@ -71,6 +93,7 @@ export default function AccountsDefault() {
         setUserId(id)
         setUserState(val)
         setOpenDialog(true);
+        setAnchorEl(null);
     };
 
     const handleChangePage = (event, newPage) => {
@@ -100,9 +123,19 @@ export default function AccountsDefault() {
         } catch (err) {
             console.log(err);
         }
-
     };
 
+    const handleActive = async () => {
+        try {
+            const response = await updateUserbyId(userId);
+            if (response.status === 200) {
+                getUsers();
+                handleCloseDialog();
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
 
     const getRole = (employee) => {
@@ -145,6 +178,16 @@ export default function AccountsDefault() {
         };
     }, []);
 
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     return (
         <Grid container rowSpacing={4.5} columnSpacing={2.75}>
@@ -245,10 +288,10 @@ export default function AccountsDefault() {
                                     ) : (
                                         <TabList onChange={handleChange} aria-label="customized tabs" sx={{ '& .MuiTab-root': { textTransform: 'none', px: 2.5, backgroundColor: '#fff', borderRadius: '10px', color: '#ADA7A7', marginRight: 1, minWidth: 'fit-content', transition: 'background-color 0.3s', '&:hover': { backgroundColor: '#2C6DB5', color: '#ffffff' }, '&:active': { backgroundColor: '#2C6DB5', color: '#ffffff' }, }, '& .Mui-selected': { backgroundColor: '#2C6DB5', color: '#ffffff !important' }, '& .MuiTabs-indicator': { backgroundColor: 'transparent' }, }} >
                                             <Tab label="All" value="All" onClick={() => { setStatusVal(''); setRoleVal(''); }} />
-                                            {role === 'super admin' && ( <Tab label="Super Admin" value="SuperAdmin" onClick={() => { setStatusVal(''); setRoleVal('superadmin'); }} /> )}
-                                            {(role === 'admin' || role === 'super admin') && ( <Tab label="Admin" value="Admin" onClick={() => { setStatusVal(''); setRoleVal('admin'); }} /> )}
-                                            {(role === 'sub-admin' || role === 'admin' || role === 'super admin') && ( <Tab label="SubAdmin" value="SubAdmin" onClick={() => { setStatusVal(''); setRoleVal('creator'); }} /> )}
-                                            {(role === 'agent' || role === 'sub-admin' || role === 'admin' || role === 'super admin') && ( <Tab label="Peer" value="Peer" onClick={() => { setStatusVal(''); setRoleVal('agent'); }} /> )}
+                                            {role === 'super admin' && (<Tab label="Super Admin" value="SuperAdmin" onClick={() => { setStatusVal(''); setRoleVal('superadmin'); }} />)}
+                                            {(role === 'admin' || role === 'super admin') && (<Tab label="Admin" value="Admin" onClick={() => { setStatusVal(''); setRoleVal('admin'); }} />)}
+                                            {(role === 'sub-admin' || role === 'admin' || role === 'super admin') && (<Tab label="SubAdmin" value="SubAdmin" onClick={() => { setStatusVal(''); setRoleVal('creator'); }} />)}
+                                            {(role === 'agent' || role === 'sub-admin' || role === 'admin' || role === 'super admin') && (<Tab label="Peer" value="Peer" onClick={() => { setStatusVal(''); setRoleVal('agent'); }} />)}
                                         </TabList>
                                     )}
 
@@ -281,8 +324,7 @@ export default function AccountsDefault() {
                             </Grid>
                         </Box>
                         <TabPanel value={value} sx={{ p: 0, py: 2 }}>
-                            {rows && rows.length > 0
-                                ?
+                            {rows && rows.length > 0 ?
                                 <TableContainer component={Paper} sx={{ borderRadius: '10px' }}>
                                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                                         <TableHead>
@@ -302,20 +344,85 @@ export default function AccountsDefault() {
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{row?.personal_details?.name}</TableCell>
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{role}</TableCell>
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{row?.payment_details?.upi_id}</TableCell>
+
+
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>
                                                             <Grid alignItems="center" sx={{ display: 'flex' }}>
-                                                                <CircleIcon sx={{ mr: 1, fontSize: '1.2rem', color: row?.payment_details?.is_blocked ? '#EF4444' : '#22C55D' }} />
-                                                                <Typography variant="body1" sx={{ color: row?.payment_details?.is_blocked ? '#EF4444' : '#22C55D' }}> {row?.payment_details?.is_blocked ? 'Block' : 'Unblock'}</Typography>
+                                                                <CircleIcon sx={{ mr: 1, fontSize: '1.2rem', color: row?.personal_details?.is_checked_in ? '#22C55D' : '#EF4444' }} />
+                                                                <Typography variant="body1" sx={{ color: row?.personal_details?.is_checked_in ? '#22C55D' : '#EF4444' }}> {row?.personal_details?.is_checked_in ? 'Active' : 'InActive'}</Typography>
                                                             </Grid>
                                                         </TableCell>
+
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8, display: 'flex', justifyContent: 'space-between' }}>
-                                                            <Button disableRipple sx={{ '&:hover': { backgroundColor: 'transparent' } }} onClick={(e) => { e.stopPropagation(); handleOpenDialog(row?.personal_details?.id, row?.payment_details?.is_blocked) }}>
-                                                                {row?.payment_details?.is_blocked ? <TripOriginIcon sx={{ mr: 1, fontSize: '1.2rem', color: '#22C55D' }} /> : <PanoramaFishEyeIcon sx={{ mr: 1, fontSize: '1.2rem', color: '#EF4444' }} />}
-                                                                <Typography variant="body1" sx={{ color: row?.payment_details?.is_blocked ? '#22C55D' : '#EF4444' }}>{row?.payment_details?.is_blocked ? 'Mark UnBlock' : 'Mark Block'}</Typography>
+                                                            <Button disableRipple sx={{ '&:hover': { backgroundColor: 'transparent' } }} onClick={(e) => { e.stopPropagation(); handleOpenDialog(row?.personal_details?.id, row?.personal_details?.is_checked_in) }}>
+                                                                {!row?.personal_details?.is_checked_in ? <TripOriginIcon sx={{ mr: 1, fontSize: '1.2rem', color: '#22C55D' }} /> : <PanoramaFishEyeIcon sx={{ mr: 1, fontSize: '1.2rem', color: '#EF4444' }} />}
+                                                                <Typography variant="body1" sx={{ color: !row?.personal_details?.is_checked_in ? '#22C55D' : '#EF4444' }}>{row?.personal_details?.is_checked_in ? 'InActive' : 'Active'}</Typography>
                                                             </Button>
-                                                            {/* <Button sx={{ minWidth: 'fit-content', p: 1, '&:hover, &:active, &:focus': { backgroundColor: 'transparent !important' } }}>
-                                                                        <MoreVertIcon sx={{ width: '1.2rem', color: '#2C6DB5', rotate: '90deg' }} />
-                                                                    </Button> */}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                            }}
+                                                        >
+                                                            <IconButton
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleClick(e);
+                                                                }}
+                                                                aria-label="more options"
+                                                                id="action-button"
+                                                                aria-controls={open ? 'action-menu' : undefined}
+                                                                aria-expanded={open ? 'true' : undefined}
+                                                                aria-haspopup="true"
+                                                            >
+                                                                <MoreHorizIcon />
+                                                            </IconButton>
+
+                                                            <Menu
+                                                                id="action-menu"
+                                                                MenuListProps={{
+                                                                    'aria-labelledby': 'action-button',
+                                                                }}
+                                                                anchorEl={anchorEl}
+                                                                open={open}
+                                                                onClose={handleClose}
+                                                                PaperProps={{
+                                                                    style: {
+                                                                        width: 'fit-content', // Adjust the width for better design
+                                                                        boxShadow: '0px 4px 6px rgba(182, 182, 182, 0.1)',
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <MenuItem
+                                                                    sx={{
+                                                                        gap: 2,
+                                                                        padding: '8px 16px',
+                                                                        '&:hover': {
+                                                                            backgroundColor: '#f9f9f9', // Hover effect
+                                                                        },
+                                                                    }}
+                                                                    onClick={(e) =>
+                                                                        handleOpenDialog(row?.personal_details?.id, row?.personal_details?.is_checked_in)
+                                                                    }
+                                                                >
+                                                                    <BlockIcon
+                                                                        sx={{
+                                                                            color: row?.payment_details?.is_blocked ? '#22C55D' : '#EF4444',
+                                                                            fontSize: '20px', // Icon size
+                                                                        }}
+                                                                    />
+                                                                    <Typography
+                                                                        variant="body2"
+                                                                        sx={{
+                                                                            color: row?.payment_details?.is_blocked ? '#22C55D' : '#EF4444',
+                                                                            fontWeight: 500, // Make text bold for better visibility
+                                                                        }}
+                                                                    >
+                                                                        {row?.payment_details?.is_blocked ? 'Mark Unblock' : 'Mark Block'}
+                                                                    </Typography>
+                                                                </MenuItem>
+                                                            </Menu>
+
                                                         </TableCell>
                                                     </TableRow>
                                                 )
