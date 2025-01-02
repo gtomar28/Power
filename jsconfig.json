@@ -9,6 +9,6 @@
       ]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "public/service-worker.js"],
   "exclude": ["node_modules"],
 }
