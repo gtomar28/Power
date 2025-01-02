@@ -100,12 +100,14 @@ export default function UserProfileDefault() {
     setShowLoader(true); // Show loader immediately
     const timeout = setTimeout(() => {
       try {
-        localStorage.removeItem("power_token");
-        localStorage.removeItem("role");
-        localStorage.removeItem("data");
-        localStorage.removeItem("assigned_data");
         navigate("/");
-        window.location.reload();
+        setTimeout(() => {
+          localStorage.removeItem("power_token");
+          localStorage.removeItem("role");
+          localStorage.removeItem("data");
+          localStorage.removeItem("assigned_data");
+          window.location.reload();
+        }, 500);
       } catch (err) {
         console.error("Error during logout:", err);
       } finally {
