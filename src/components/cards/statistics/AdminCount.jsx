@@ -1,13 +1,19 @@
-import React, { useState } from "react";
-import { Grid, Stack, Typography, Card, Menu, MenuItem, Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Grid, Stack, Typography, Card, Menu, MenuItem, Box, Button } from "@mui/material";
 import MainCard from "components/MainCard";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CircleIcon from "@mui/icons-material/Circle";
+import { useNavigate } from "react-router-dom";
 
 
 export default function AdminCount({ title, items, selectedAdminIds, onAdminSelect }) {
-    
+
+    console.log(items, 'items data')
+
+    const token = localStorage.getItem('power-token')
+    const navigate = useNavigate()
     const role = localStorage.getItem('role')
+    const [data, setData] = useState([]);
     const [anchorEl, setAnchorEl] = useState({});
     const [selectedAdmins, setSelectedAdmins] = useState({});
 
@@ -27,6 +33,52 @@ export default function AdminCount({ title, items, selectedAdminIds, onAdminSele
         onAdminSelect(index, id);
         handleClose(index);
     };
+
+    useEffect(() => {
+        getAccounts();
+    }, [])
+
+
+    const getAccounts = async () => {
+        try {
+            const response = await getAllAccounts();
+            console.log(response, "Accounts");
+
+            if (response?.status === 200) {
+                setData(response?.data);
+            } else {
+                console.error('Failed to fetch data', response);
+            }
+        } catch (err) {
+            console.error('Error fetching users:', err);
+        } finally {
+            // setLoading(false);
+        }
+    };
+
+    const handleActivateAccount = async (id) => {
+        const dataJson = {
+            "bank_id": id
+        }
+        try {
+            const response = await CreateBank(dataJson);
+            console.log(response, "Create Account")
+            if (response.status === 200) {
+                toast.success("Accounts Activated Successfully");
+                // navigate('/dashboard');
+                getAccounts()
+            }
+            else {
+                // toast.error(response.status);
+            }
+        } catch (err) {
+            // toast.error(response.status);
+            console.log(err, 'errror');
+        }
+    };
+
+
+
 
     return (
         <MainCard contentSX={{ p: 2 }}>
