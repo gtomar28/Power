@@ -329,7 +329,7 @@ export default function AccountsDefault() {
                                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell sx={{ textWrap: 'nowrap', py: 2.5 }}>Name</TableCell>
+                                                <TableCell sx={{ textWrap: 'nowrap', py: 2.5 }}>Username</TableCell>
                                                 <TableCell sx={{ textWrap: 'nowrap', py: 2.5 }}>Role</TableCell>
                                                 <TableCell sx={{ textWrap: 'nowrap', py: 2.5 }}>User UPI ID</TableCell>
                                                 <TableCell sx={{ textWrap: 'nowrap', py: 2.5 }}>Active status</TableCell>
@@ -341,7 +341,7 @@ export default function AccountsDefault() {
                                                 const role = getRole(row?.personal_details);
                                                 return (
                                                     <TableRow onClick={() => navigate(`/userProfile/${row?.personal_details?.id}`)} key={index} sx={{ textDecoration: 'none', backgroundColor: index % 2 !== 0 ? '#fff' : '#F2F6FC' }}>
-                                                        <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{row?.personal_details?.name}</TableCell>
+                                                        <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{row?.personal_details?.username}</TableCell>
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{role}</TableCell>
                                                         <TableCell sx={{ textWrap: 'nowrap', py: 1.8 }}>{row?.payment_details?.upi_id}</TableCell>
 
