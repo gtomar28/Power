@@ -1,13 +1,21 @@
-import React, { useState } from "react";
-import { Grid, Stack, Typography, Card, Menu, MenuItem, Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Grid, Stack, Typography, Card, Menu, MenuItem, Box, Button } from "@mui/material";
 import MainCard from "components/MainCard";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CircleIcon from "@mui/icons-material/Circle";
+import { useNavigate } from "react-router";
+import { CreateBank, getAllAccounts } from "api/api";
+import toast from "react-hot-toast";
 
 
 export default function AdminCount({ title, items, selectedAdminIds, onAdminSelect }) {
     
+    console.log(items, 'items data')
+
+    const token = localStorage.getItem('power-token')
+    const navigate = useNavigate()
     const role = localStorage.getItem('role')
+    const [data, setData] = useState([]);
     const [anchorEl, setAnchorEl] = useState({});
     const [selectedAdmins, setSelectedAdmins] = useState({});
 
@@ -28,6 +36,51 @@ export default function AdminCount({ title, items, selectedAdminIds, onAdminSele
         handleClose(index);
     };
 
+    useEffect(() => {
+        getAccounts();
+    }, [])
+    
+
+    const getAccounts = async () => {
+        try {
+            const response = await getAllAccounts();
+            console.log(response, "Accounts");
+
+            if (response?.status === 200) {
+                setData(response?.data);
+            } else {
+                console.error('Failed to fetch data', response);
+            }
+        } catch (err) {
+            console.error('Error fetching users:', err);
+        } finally {
+            // setLoading(false);
+        }
+    };
+
+    const handleActivateAccount = async (id) => {
+        const dataJson = {
+            "bank_id": id
+        }
+        try {
+            const response = await CreateBank(dataJson);
+            console.log(response, "Create Account")
+            if (response.status === 200) {
+                toast.success("Accounts Activated Successfully");
+                // navigate('/dashboard');
+                getAccounts()
+            }
+            else {
+                // toast.error(response.status);
+            }
+        } catch (err) {
+            // toast.error(response.status);
+            console.log(err, 'errror');
+        }
+    };
+
+
+
     return (
         <MainCard contentSX={{ p: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 900, color: "#676767" }}>
@@ -37,7 +90,7 @@ export default function AdminCount({ title, items, selectedAdminIds, onAdminSele
             {/* Dynamic Dropdowns */}
             {role !== 'agent' 
                 ?
-                    items.slice(0,4).map((item, index) => (
+                (Array.isArray(items) ? (role === 'super admin' ? items.slice(0, 2) : items.slice(0, 7)) : []).map((item, index) => (
                     <Grid
                         key={index}
                         id={`dropdown-${index}`}
@@ -56,8 +109,8 @@ export default function AdminCount({ title, items, selectedAdminIds, onAdminSele
                             direction="row"
                             sx={{ justifyContent: "space-between", alignItems: "center" }}
                         >
-                            <Typography variant="h6" sx={{ fontWeight: 900, color: "#676767" }}>
-                                    {selectedAdmins[index] ? selectedAdmins[index] : role === 'super admin' ? 'Select Admin' : role === 'admin' ? 'Select Sub Admin' : role === 'sub-admin' ? 'Select Peer' : ''}
+                                <Typography variant="h6" sx={{ fontWeight: 900, color: "#676767" }} onClick={(e) => { e.stopPropagation(); if (role === "admin") { navigate(`/userProfile/${item.id}`); }} }>
+                                {selectedAdmins[index] ? selectedAdmins[index] : role === 'super admin' ? 'Select Admin' : role === 'admin' ? item?.username : role === 'sub-admin' ? 'Select Peer' : ''}
                             </Typography>
                             <Card
                                 sx={{
@@ -75,73 +128,293 @@ export default function AdminCount({ title, items, selectedAdminIds, onAdminSele
                         </Stack>
 
                         {/* Dropdown Menu */}
-                        <Menu
-                            anchorEl={anchorEl[index]}
-                            open={Boolean(anchorEl[index])}
-                            onClose={() => handleClose(index)}
-                            sx={{ '& .MuiPaper-root': { marginTop: '2px', boxShadow: '0px 3px 3px rgba(159, 159, 159, 0.15)', width: '35%', }, width: '100%', }}
-                        >
-                            {items.map((admin) => (
-                                <MenuItem
-                                    key={admin.id}
-                                    onClick={() => handleSelectAdmin(index, admin.username, admin.id)}
-                                >
-                                    {admin.username}
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                        
+                            <Menu
+                                anchorEl={anchorEl[index]}
+                                open={Boolean(anchorEl[index])}
+                                onClose={() => handleClose(index)}
+                                sx={{
+                                    '& .MuiPaper-root': {
+                                        marginTop: '2px',
+                                        boxShadow: '0px 3px 3px rgba(159, 159, 159, 0.15)',
+                                        width: '35%',
+                                    },
+                                    width: '100%',
+                                }}
+                            >
+                                {role === 'super admin'
+                                    ? 
+                                    (
+                                        items.map((admin) => (
+                                            <MenuItem
+                                                key={admin.id}
+                                                onClick={() => handleSelectAdmin(index, admin.username, admin.id)}
+                                            >
+                                                {admin.username}
+                                            </MenuItem>
+                                        ))
+                                    )
+                                    : 
+                                    role === 'admin' 
+                                    ? 
+                                    (
+                                        item.agent && item.agent.length > 0
+                                        ? 
+                                        item.agent.map((agent) => (
+                                            <MenuItem
+                                                key={agent.id}
+                                                onClick={() => navigate(`userProfile/${agent.id}`)}
+                                            >
+                                                {agent.username}
+                                            </MenuItem>
+                                        ))
+                                        : 
+                                        <MenuItem disabled>No agents available</MenuItem>
+                                    )
+                                    :
+                                    role === 'creator'
+                                    ?
+                                    (
+                                        item.agent && item.agent.length > 0
+                                            ?
+                                            item.agent.map((agent) => (
+                                                <MenuItem
+                                                    key={agent.id}
+                                                    onClick={() => navigate(`userProfile/${agent.id}`)}
+                                                >
+                                                    {agent.username}
+                                                </MenuItem>
+                                            ))
+                                            :
+                                            <MenuItem disabled>No agents available</MenuItem>
+                                    )
+                                    :'No Data'
+                                }
+                            </Menu>
                     </Grid>
                     ))
                 :
-                    // items.slice(0, 2).map((item, index) => (
-                    <Box sx={{ backgroundColor: "#F7F4FF", borderRadius: "10px", boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", mt:2 }} >
+                data.map((bankData, index) => (
+                    <>
+                    <Box sx={{ backgroundColor: "#F7F4FF", borderRadius: "10px", boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", mt: 2 }} >
                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ p: 1 }} >
-                        <Typography variant="subtitle1" sx={{ fontWeight: "bold", color: "#333", textTransform: 'capitalize' }} >
-                            {items?.bank_details?.bank_name}
+                            <Typography variant="subtitle1" sx={{ fontWeight: "bold", color: "#333", textTransform: 'capitalize' }} >
+                                {bankData?.bank_name}
                             </Typography>
-                            <Stack direction="row" alignItems="center" spacing={0.5}>
-                                <CircleIcon sx={{ color: "red", fontSize: "12px" }} />
-                                <Typography variant="body2" sx={{ color: "red", fontWeight: "bold" }} >
-                                    Inactive
+                            <Stack direction="row" alignItems="center" spacing={0.5} onClick={()=> handleActivateAccount(bankData?.id)} sx={{ cursor: 'pointer'}}>
+                                    <CircleIcon sx={{ color: bankData?.is_active ? '#22C55D' : '#EF4444', fontSize: "12px" }} />
+                                <Typography variant="body2" sx={{ color: bankData?.is_active ? '#22C55D' : '#EF4444', fontWeight: "bold" }} >
+                                    {bankData?.is_active ? 'Active' : 'Inactive' }
                                 </Typography>
                             </Stack>
                         </Stack>
 
                         <Box sx={{ backgroundColor: "#EEE8FF", padding: "12px", borderRadius: "0px 0px 10px 10px" }}>
-                            <Grid sx={{ display: 'flex', justifyContent: 'space-between'}}>
+                            <Grid sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Typography variant="body2" sx={{ color: "#666", marginBottom: "4px" }}>
                                     Account Holder Number:
                                 </Typography>
                                 <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
-                                {items?.bank_details?.name}
+                                    {bankData?.bank_details?.name}
                                 </Typography>
                             </Grid>
 
                             <Grid sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography variant="body2" sx={{ color: "#666", marginBottom: "4px" }}>
-                                Account Number:
-                            </Typography>
-                            <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
-                                {items?.bank_details?.bank_account_number}
-                            </Typography>
+                                <Typography variant="body2" sx={{ color: "#666", marginBottom: "4px" }}>
+                                    Account Number:
+                                </Typography>
+                                <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
+                                        {bankData?.account_number}
+                                </Typography>
                             </Grid>
-                            
+
                             <Grid sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography variant="body2" sx={{ color: "#666" }}>
-                                IFSC code:
-                            </Typography>
-                            <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
-                                {items?.bank_details?.IFSC}
-                            </Typography>
+                                <Typography variant="body2" sx={{ color: "#666" }}>
+                                    IFSC code:
+                                </Typography>
+                                <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
+                                        {bankData?.ifsc}
+                                </Typography>
                             </Grid>
                         </Box>
                     </Box>
-            // ))
+                    </>
+            ))
+            
+            }
+
+            {role === 'agent' && 
+            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
+                <Button variant='contained' href="/createUser" sx={{ backgroundColor: '#5B3CA1', borderRadius: '34px', px: 4, '&:hover': { backgroundColor: '#5B3CA1' } }}>Add Bank Account</Button>
+            </Box>
             }
         </MainCard>
     );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from "react";
+// import { Grid, Stack, Typography, Card, Menu, MenuItem, Box } from "@mui/material";
+// import MainCard from "components/MainCard";
+// import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+// import CircleIcon from "@mui/icons-material/Circle";
+
+
+// export default function AdminCount({ title, items, selectedAdminIds, onAdminSelect }) {
+    
+//     const role = localStorage.getItem('role')
+//     const [anchorEl, setAnchorEl] = useState({});
+//     const [selectedAdmins, setSelectedAdmins] = useState({});
+
+//     // Open menu handler
+//     const handleClick = (event, index) => {
+//         setAnchorEl((prev) => ({ ...prev, [index]: event.currentTarget }));
+//     };
+
+//     // Close menu handler
+//     const handleClose = (index) => {
+//         setAnchorEl((prev) => ({ ...prev, [index]: null }));
+//     };
+
+//     // Select admin handler
+//     const handleSelectAdmin = (index, username, id) => {
+//         setSelectedAdmins((prev) => ({ ...prev, [index]: username }));
+//         onAdminSelect(index, id);
+//         handleClose(index);
+//     };
+
+//     return (
+//         <MainCard contentSX={{ p: 2 }}>
+//             <Typography variant="h6" sx={{ fontWeight: 900, color: "#676767" }}>
+//                 {title} {role === 'super admin' ? 'Admin' : role === 'admin' ? 'Sub Admin' : role === 'sub-admin' ? 'Peer' : 'Bank Acoounts' }
+//             </Typography>
+
+//             {/* Dynamic Dropdowns */}
+//             {role !== 'agent' 
+//                 ?
+//                     items.slice(0,4).map((item, index) => (
+//                     <Grid
+//                         key={index}
+//                         id={`dropdown-${index}`}
+//                         sx={{
+//                             width: "100%",
+//                             backgroundColor: "#F2F6FC",
+//                             borderRadius: "8px",
+//                             p: 1,
+//                             my: 2,
+//                             cursor: "pointer",
+//                         }}
+//                         onClick={(e) => handleClick(e, index)}
+//                     >
+
+//                         <Stack
+//                             direction="row"
+//                             sx={{ justifyContent: "space-between", alignItems: "center" }}
+//                         >
+//                             <Typography variant="h6" sx={{ fontWeight: 900, color: "#676767" }}>
+//                                     {selectedAdmins[index] ? selectedAdmins[index] : role === 'super admin' ? 'Select Admin' : role === 'admin' ? 'Select Sub Admin' : role === 'sub-admin' ? 'Select Peer' : ''}
+//                             </Typography>
+//                             <Card
+//                                 sx={{
+//                                     backgroundColor: "#DAE5F2",
+//                                     boxShadow: "none",
+//                                     borderRadius: "6px",
+//                                     display: "flex",
+//                                     justifyContent: "center",
+//                                     alignItems: "center",
+//                                     p: 0.4,
+//                                 }}
+//                             >
+//                                 <KeyboardArrowDownIcon />
+//                             </Card>
+//                         </Stack>
+
+//                         {/* Dropdown Menu */}
+//                         <Menu
+//                             anchorEl={anchorEl[index]}
+//                             open={Boolean(anchorEl[index])}
+//                             onClose={() => handleClose(index)}
+//                             sx={{ '& .MuiPaper-root': { marginTop: '2px', boxShadow: '0px 3px 3px rgba(159, 159, 159, 0.15)', width: '35%', }, width: '100%', }}
+//                         >
+//                             {items.map((admin) => (
+//                                 <MenuItem
+//                                     key={admin.id}
+//                                     onClick={() => handleSelectAdmin(index, admin.username, admin.id)}
+//                                 >
+//                                     {admin.username}
+//                                 </MenuItem>
+//                             ))}
+//                         </Menu>
+                        
+//                     </Grid>
+//                     ))
+//                 :
+//                     // items.slice(0, 2).map((item, index) => (
+//                     <Box sx={{ backgroundColor: "#F7F4FF", borderRadius: "10px", boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", mt:2 }} >
+//                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ p: 1 }} >
+//                         <Typography variant="subtitle1" sx={{ fontWeight: "bold", color: "#333", textTransform: 'capitalize' }} >
+//                             {items?.bank_details?.bank_name}
+//                             </Typography>
+//                             <Stack direction="row" alignItems="center" spacing={0.5}>
+//                                 <CircleIcon sx={{ color: "red", fontSize: "12px" }} />
+//                                 <Typography variant="body2" sx={{ color: "red", fontWeight: "bold" }} >
+//                                     Inactive
+//                                 </Typography>
+//                             </Stack>
+//                         </Stack>
+
+//                         <Box sx={{ backgroundColor: "#EEE8FF", padding: "12px", borderRadius: "0px 0px 10px 10px" }}>
+//                             <Grid sx={{ display: 'flex', justifyContent: 'space-between'}}>
+//                                 <Typography variant="body2" sx={{ color: "#666", marginBottom: "4px" }}>
+//                                     Account Holder Number:
+//                                 </Typography>
+//                                 <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
+//                                 {items?.bank_details?.name}
+//                                 </Typography>
+//                             </Grid>
+
+//                             <Grid sx={{ display: 'flex', justifyContent: 'space-between' }}>
+//                             <Typography variant="body2" sx={{ color: "#666", marginBottom: "4px" }}>
+//                                 Account Number:
+//                             </Typography>
+//                             <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
+//                                 {items?.bank_details?.bank_account_number}
+//                             </Typography>
+//                             </Grid>
+                            
+//                             <Grid sx={{ display: 'flex', justifyContent: 'space-between' }}>
+//                             <Typography variant="body2" sx={{ color: "#666" }}>
+//                                 IFSC code:
+//                             </Typography>
+//                             <Typography component="span" variant="body2" sx={{ color: "#333", fontWeight: "bold", marginLeft: "8px" }} >
+//                                 {items?.bank_details?.IFSC}
+//                             </Typography>
+//                             </Grid>
+//                         </Box>
+//                     </Box>
+//             // ))
+//             }
+//         </MainCard>
+//     );
+// }
 
 
 
