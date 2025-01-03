@@ -35,14 +35,14 @@ import { Toaster } from 'react-hot-toast';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-// Register Service Worker if the app is running in production
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-    navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
-        console.log('Service Worker registered with scope:', registration.scope);
-    }).catch(function (error) {
-        console.error('Service Worker registration failed:', error);
-    });
-}
+// // Register Service Worker if the app is running in production
+// if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+//     navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
+//         console.log('Service Worker registered with scope:', registration.scope);
+//     }).catch(function (error) {
+//         console.error('Service Worker registration failed:', error);
+//     });
+// }
 
 root.render(
     <DialogProvider>

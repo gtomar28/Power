@@ -16,7 +16,6 @@ export const DialogProvider = ({ children }) => {
   const [isGenerated, setIsGenerated] = useState(false);
   const [progress, setProgress] = useState(0);
   const [selectedAccounts, setSelectedAccounts] = useState([]);
-  console.log(selectedAccounts)
   const [excelData, setExcelData] = useState();
   const [progressCompleted, setProgressCompleted] = useState(false);
 
@@ -41,7 +40,6 @@ export const DialogProvider = ({ children }) => {
   }, [isOpen]);
 
   const getUsers = async () => {
-    // setLoading(true);
     try {
       const response = await getAllUsersData();
       if (response?.status === 200) {
@@ -52,7 +50,6 @@ export const DialogProvider = ({ children }) => {
     } catch (err) {
       console.error('Error fetching users:', err);
     } finally {
-      // setLoading(false);
     }
   };
 
@@ -69,8 +66,6 @@ export const DialogProvider = ({ children }) => {
       setSelectedAccounts(filteredValues);
     }
   };
-
-
 
   const onSubmit = async (data) => {
     const reportData = {
@@ -123,7 +118,6 @@ export const DialogProvider = ({ children }) => {
     link.click();
     document.body.removeChild(link);
   };
-
 
   return (
     <DialogContext.Provider value={{ openDialog, closeDialog }}>

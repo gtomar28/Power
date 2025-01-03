@@ -1,3 +1,7 @@
+
+// Working code 2 with local storage
+
+
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -10,12 +14,10 @@ import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { Badge } from '@mui/material';
 import bellNotification from 'assets/images/bellNotification.svg';
-
-// Project imports
 import MainCard from 'components/MainCard';
 import Transitions from 'components/@extended/Transitions';
+import { Badge } from '@mui/material';
 
 export default function Notification() {
   const theme = useTheme();
@@ -29,123 +31,96 @@ export default function Notification() {
   const token = localStorage.getItem('power_token');
   const bio = JSON.parse(localStorage.getItem("assigned_data"));
   const role = localStorage.getItem("role");
-  const iconBackColorOpen = 'grey.100';
 
-  // Handle opening and closing the notification popper
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
+  const handleToggle = () => setOpen((prevOpen) => !prevOpen);
   const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
+    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
     setOpen(false);
   };
 
-  // WebSocket for Role-based Notifications
+  const iconBackColorOpen = 'grey.100';
+
+  const saveNotificationToLocalStorage = (newNotification) => {
+    const storedNotifications = JSON.parse(localStorage.getItem("notifications")) || [];
+    const updatedNotifications = [...storedNotifications, newNotification];
+    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+  };
+
   useEffect(() => {
-    let ws;
-    const wsBaseURL = "wss://auth2.upicollect.com";
+    // Load notifications from localStorage on mount
+    const storedNotifications = JSON.parse(localStorage.getItem("notifications")) || [];
+    setNotifications(storedNotifications);
+    setUnreadCount(storedNotifications.length);
+  }, []);
 
-    if (role === "super admin") {
-      ws = new WebSocket(`${wsBaseURL}/ws/superadmin/?token=${token}`);
-    } else {
-      ws = new WebSocket(`${wsBaseURL}/ws/user/${bio.id}/?token=${token}`);
-    }
+  const connectWebSocket = (url, onMessage) => {
+    const ws = new WebSocket(url);
 
-    ws.onopen = () => console.log("WebSocket connected.");
-    ws.onmessage = (event) => {
+    ws.onopen = () => console.log(`WebSocket connected to ${url}`);
+    ws.onmessage = onMessage;
+    ws.onerror = (error) => console.error(`WebSocket error on ${url}:`, error.message);
+    ws.onclose = () => console.log(`WebSocket disconnected from ${url}`);
+
+    return ws;
+  };
+
+  useEffect(() => {
+    if (!role || !token) return;
+
+    const baseURL = "wss://auth2.upicollect.com";
+
+    const onNotificationMessage = (event) => {
       const data = JSON.parse(event.data);
-      setNotifications((prev) => [
-        ...prev,
-        { title: "New Notification", message: data.message },
-      ]);
-      setUnreadCount((prev) => (prev || 0) + 1);
+      const newNotification = { title: "New Notification", message: data.message };
+      setNotifications((prev) => [...prev, newNotification]);
+      setUnreadCount((prev) => prev + 1);
+      saveNotificationToLocalStorage(newNotification);
     };
-    ws.onerror = (error) => console.error("WebSocket error:", error.message);
-    ws.onclose = () => console.log("WebSocket disconnected.");
+
+    const ws = role === "super admin"
+      ? connectWebSocket(`${baseURL}/ws/superadmin/?token=${token}`, onNotificationMessage)
+      : connectWebSocket(`${baseURL}/ws/user/${bio?.id}/?token=${token}`, onNotificationMessage);
 
     return () => ws.close();
   }, [role, bio?.id, token]);
 
-  // WebSocket for Order-specific Updates
   useEffect(() => {
-    if (!bio || !bio.currentOrderId) return;
+    if (!bio?.currentOrderId || !token) return;
 
-    const wsBaseURL = "wss://auth2.upicollect.com";
-    const wsOrder = new WebSocket(`${wsBaseURL}/ws/order_status/${bio.currentOrderId}/?token=${token}`);
+    const baseURL = "wss://auth2.upicollect.com";
 
-    wsOrder.onopen = () => console.log("Order-specific WebSocket connected.");
-    wsOrder.onmessage = (event) => {
+    const onOrderUpdateMessage = (event) => {
       const data = JSON.parse(event.data);
-      setNotifications((prev) => [
-        ...prev,
-        { title: "Order Update", message: data.message },
-      ]);
-      setUnreadCount((prev) => (prev || 0) + 1);
+      const newNotification = { title: "Order Update", message: data.message };
+      setNotifications((prev) => [...prev, newNotification]);
+      setUnreadCount((prev) => prev + 1);
+      saveNotificationToLocalStorage(newNotification);
     };
-    wsOrder.onerror = (error) => console.error("WebSocket error:", error.message);
-    wsOrder.onclose = () => console.log("Order-specific WebSocket disconnected.");
+
+    const wsOrder = connectWebSocket(`${baseURL}/ws/order_status/${bio.currentOrderId}/?token=${token}`, onOrderUpdateMessage);
 
     return () => wsOrder.close();
   }, [bio?.currentOrderId, token]);
 
-  // WebSocket for Payout Notifications
   useEffect(() => {
-    const wsBaseURL = "wss://auth2.upicollect.com";
-    let wsPayout;
-    if (role === "superadmin") {
-      wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/superadmin/?token=${token}`);
-    } else {
-      wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/user/${bio.id}/?token=${token}`);
-    }
+    if (!role || !token) return;
 
-    wsPayout.onopen = () => console.log("Payout WebSocket connected.");
-    wsPayout.onmessage = (event) => {
+    const baseURL = "wss://auth2.upicollect.com";
+
+    const onPayoutMessage = (event) => {
       const data = JSON.parse(event.data);
-      setNotifications((prev) => [
-        ...prev,
-        { title: "Payout Notification", message: data.message },
-      ]);
-      setUnreadCount((prev) => (prev || 0) + 1);
+      const newNotification = { title: "Payout Notification", message: data.message };
+      setNotifications((prev) => [...prev, newNotification]);
+      setUnreadCount((prev) => prev + 1);
+      saveNotificationToLocalStorage(newNotification);
     };
-    wsPayout.onerror = (error) => console.error("Payout WebSocket error:", error.message);
-    wsPayout.onclose = () => console.log("Payout WebSocket disconnected.");
+
+    const wsPayout = role === "super admin"
+      ? connectWebSocket(`${baseURL}/ws/payout/superadmin/?token=${token}`, onPayoutMessage)
+      : connectWebSocket(`${baseURL}/ws/payout/user/${bio?.id}/?token=${token}`, onPayoutMessage);
 
     return () => wsPayout.close();
   }, [role, bio?.id, token]);
-
-  // Push notification setup
-  useEffect(() => {
-    // Check if the browser supports Push Notifications and Service Workers
-    if ('Notification' in window && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        // Ask for permission to send notifications
-        Notification.requestPermission().then((permission) => {
-          if (permission === 'granted') {
-            console.log('Notification permission granted');
-
-            // Subscribe to push notifications
-            registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: '<Your VAPID Public Key>',
-            }).then((subscription) => {
-              console.log('Push subscription:', subscription);
-              // Send the subscription object to your server for storing and pushing notifications
-              // Example: Send subscription to the backend (API call)
-            }).catch((err) => {
-              console.error('Error during push subscription:', err);
-            });
-          }
-        });
-      });
-    }
-  }, []);
-
-
-
-  // Render Notifications Popper
 
   return (
     <Box sx={{ flexShrink: 0, ml: 0.75 }}>
@@ -172,8 +147,7 @@ export default function Notification() {
             },
           }}
         >
-          {/* <NotificationsNoneOutlinedIcon sx={{ fontSize: '30px' }} /> */}
-          <img src={bellNotification} alt='Notification' />
+          <img src={bellNotification} alt="Notification" />
         </Badge>
       </IconButton>
       <Popper
@@ -204,9 +178,31 @@ export default function Notification() {
                   elevation={0}
                   border={false}
                   content={false}
-                  sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
+                  sx={{ '& .MuiCardHeader-root': { padding: '10px' } }}
+                >
                   {notifications.length > 0 ? (
-                    <List component="nav" sx={{ p: 0, maxHeight: '300px', overflow: 'auto', bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
+                    <List
+                      component="nav"
+                      sx={{
+                        p: 0,
+                        maxHeight: '300px',
+                        overflow: 'auto',
+                        bgcolor: '#F2F6FC',
+                        color: 'text.primary',
+                        borderRadius: 1,
+                        boxShadow: 1,
+                        '& .MuiListItemButton-root': {
+                          py: 1.5,
+                          px: 1.5,
+                          border: '6px solid white',
+                          '&:hover': { bgcolor: '#e3ebf6' },
+                          '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' },
+                        },
+                        '& .MuiTypography-h6': { fontWeight: 'bold' },
+                        '& .MuiTypography-subtitle1': { color: '#757575' },
+                        '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' },
+                      }}
+                    >
                       {notifications.map((notification, index) => (
                         <ListItemButton key={index}>
                           <ListItemText
@@ -225,9 +221,10 @@ export default function Notification() {
                       ))}
                     </List>
                   ) : (
-                    <Typography variant="body2" align="center" color="text.secondary" sx={{ m: 2 }} > No new notifications. </Typography>
+                    <Typography variant="body2" align="center" color="text.secondary" sx={{ m: 2 }}>
+                      No new notifications.
+                    </Typography>
                   )}
-
                 </MainCard>
               </ClickAwayListener>
             </Paper>
@@ -244,40 +241,10 @@ export default function Notification() {
 
 
 
+// Working code 1 without local storage and push notification
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // working with badge and adding push notification
 
 // import { useEffect, useRef, useState } from 'react';
-
-
-// // material-ui
 // import { useTheme } from '@mui/material/styles';
 // import useMediaQuery from '@mui/material/useMediaQuery';
 // import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -290,12 +257,9 @@ export default function Notification() {
 // import Typography from '@mui/material/Typography';
 // import Box from '@mui/material/Box';
 // import bellNotification from 'assets/images/bellNotification.svg';
-
-// // project import
 // import MainCard from 'components/MainCard';
 // import Transitions from 'components/@extended/Transitions';
 // import { Badge } from '@mui/material';
-
 
 // export default function Notification() {
 //   const theme = useTheme();
@@ -322,12 +286,11 @@ export default function Notification() {
 
 //   const token = localStorage.getItem('power_token');
 //   const bio = JSON.parse(localStorage.getItem("assigned_data"));
-//   console.log(bio, 'biioooo')
 
 //   const role = localStorage.getItem("role")
 
 //   useEffect(() => {
-//     let ws; // WebSocket instance
+//     let ws;
 //     const wsBaseURL = "wss://auth2.upicollect.com";
 
 //     // Determine WebSocket URL based on the user's role and the notification type
@@ -351,7 +314,7 @@ export default function Notification() {
 //     ws.onerror = (error) => console.error("WebSocket error:", error.message);
 //     ws.onclose = () => console.log("WebSocket disconnected.");
 
-//     return () => ws.close(); // Cleanup WebSocket on component unmount
+//     return () => ws.close();
 //   }, [role, bio?.id, token]);
 
 //   // WebSocket for Order-Specific Updates
@@ -375,7 +338,7 @@ export default function Notification() {
 //     wsOrder.onerror = (error) => console.error("WebSocket error:", error.message);
 //     wsOrder.onclose = () => console.log("Order-specific WebSocket disconnected.");
 
-//     return () => wsOrder.close(); // Cleanup WebSocket on component unmount
+//     return () => wsOrder.close();
 //   }, [bio?.currentOrderId, token]);
 
 //   // WebSocket for Payouts
@@ -401,10 +364,8 @@ export default function Notification() {
 //     wsPayout.onerror = (error) => console.error("Payout WebSocket error:", error.message);
 //     wsPayout.onclose = () => console.log("Payout WebSocket disconnected.");
 
-//     return () => wsPayout.close(); // Cleanup WebSocket on component unmount
+//     return () => wsPayout.close();
 //   }, [role, bio?.id, token]);
-
-
 
 //   return (
 //     <Box sx={{ flexShrink: 0, ml: 0.75 }}>
@@ -431,7 +392,6 @@ export default function Notification() {
 //             },
 //           }}
 //         >
-//           {/* <NotificationsNoneOutlinedIcon sx={{ fontSize: '30px' }} /> */}
 //           <img src={bellNotification} alt='Notification' />
 //         </Badge>
 //       </IconButton>
@@ -465,1121 +425,7 @@ export default function Notification() {
 //                   content={false}
 //                   sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
 //                   {notifications.length > 0 ? (
-//                     <List component="nav" sx={{ p: 0, bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
-//                       {notifications.map((notification, index) => (
-//                         <ListItemButton key={index}>
-//                           <ListItemText
-//                             primary={
-//                               <Typography variant="h6">
-//                                 {notification.title || 'Notification'}
-//                               </Typography>
-//                             }
-//                             secondary={
-//                               <Typography variant="subtitle1">
-//                                 {notification.message || 'No details available.'}
-//                               </Typography>
-//                             }
-//                           />
-//                         </ListItemButton>
-//                       ))}
-//                     </List>
-//                   ) : (
-//                     <Typography variant="body2" align="center" color="text.secondary" sx={{ m: 2 }} > No new notifications. </Typography>
-//                   )}
-
-//                 </MainCard>
-//               </ClickAwayListener>
-//             </Paper>
-//           </Transitions>
-//         )}
-//       </Popper>
-//     </Box>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // working with badge and adding push notification
-
-// import { useEffect, useRef, useState } from 'react';
-
-
-// // material-ui
-// import { useTheme } from '@mui/material/styles';
-// import useMediaQuery from '@mui/material/useMediaQuery';
-// import ClickAwayListener from '@mui/material/ClickAwayListener';
-// import IconButton from '@mui/material/IconButton';
-// import List from '@mui/material/List';
-// import ListItemButton from '@mui/material/ListItemButton';
-// import ListItemText from '@mui/material/ListItemText';
-// import Paper from '@mui/material/Paper';
-// import Popper from '@mui/material/Popper';
-// import Typography from '@mui/material/Typography';
-// import Box from '@mui/material/Box';
-// import bellNotification from 'assets/images/bellNotification.svg';
-
-// // project import
-// import MainCard from 'components/MainCard';
-// import Transitions from 'components/@extended/Transitions';
-// import { Badge } from '@mui/material';
-
-
-// // Notification 
-// import { PushNotifications } from '@capacitor/push-notifications';
-// import { Capacitor } from '@capacitor/core';
-
-
-// export default function Notification() {
-//   const theme = useTheme();
-//   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
-
-//   const anchorRef = useRef(null);
-//   const [read, setRead] = useState(2);
-//   const [open, setOpen] = useState(false);
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState(0)
-
-//   const handleToggle = () => {
-//     setOpen((prevOpen) => !prevOpen);
-//   };
-
-//   const handleClose = (event) => {
-//     if (anchorRef.current && anchorRef.current.contains(event.target)) {
-//       return;
-//     }
-//     setOpen(false);
-//   };
-
-//   const iconBackColorOpen = 'grey.100';
-
-//   const token = localStorage.getItem('power_token');
-//   const bio = JSON.parse(localStorage.getItem("assigned_data"));
-//   console.log(bio, 'biioooo')
-
-//   const role = localStorage.getItem("role")
-
-//   useEffect(() => {
-//     let ws; // WebSocket instance
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     // Determine WebSocket URL based on the user's role and the notification type
-//     if (role === "super admin") {
-//       ws = new WebSocket(`${wsBaseURL}/ws/superadmin/?token=${token}`);
-//     } else {
-//       // For other roles
-//       ws = new WebSocket(`${wsBaseURL}/ws/user/${bio.id}/?token=${token}`);
-//     }
-
-//     ws.onopen = () => console.log("WebSocket connected.");
-//     ws.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Notification received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "New Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     ws.onerror = (error) => console.error("WebSocket error:", error.message);
-//     ws.onclose = () => console.log("WebSocket disconnected.");
-
-//     return () => ws.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-//   // WebSocket for Order-Specific Updates
-//   useEffect(() => {
-//     if (!bio || !bio.currentOrderId) return;
-
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     const wsOrder = new WebSocket(`${wsBaseURL}/ws/order_status/${bio.currentOrderId}/?token=${token}`);
-
-//     wsOrder.onopen = () => console.log("Order-specific WebSocket connected.");
-//     wsOrder.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Order update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Order Update", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsOrder.onerror = (error) => console.error("WebSocket error:", error.message);
-//     wsOrder.onclose = () => console.log("Order-specific WebSocket disconnected.");
-
-//     return () => wsOrder.close(); // Cleanup WebSocket on component unmount
-//   }, [bio?.currentOrderId, token]);
-
-//   // WebSocket for Payouts
-//   useEffect(() => {
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-//     let wsPayout;
-//     if (role === "superadmin") {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/superadmin/?token=${token}`);
-//     } else {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/user/${bio.id}/?token=${token}`);
-//     }
-
-//     wsPayout.onopen = () => console.log("Payout WebSocket connected.");
-//     wsPayout.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Payout update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Payout Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsPayout.onerror = (error) => console.error("Payout WebSocket error:", error.message);
-//     wsPayout.onclose = () => console.log("Payout WebSocket disconnected.");
-
-//     return () => wsPayout.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-
-
-  // // notification
-
-  // const createNotificationChannel = () => {
-  //   if (Capacitor.getPlatform() === 'android') {
-  //     PushNotifications.createChannel({
-  //       id: 'default',
-  //       name: 'Default Channel',
-  //       description: 'Channel for default notifications',
-  //       importance: 3, // Set importance to display notifications in the drawer
-  //     }).then(() => {
-  //       console.log('Notification channel created');
-  //     }).catch((error) => {
-  //       console.error('Error creating notification channel', error);
-  //     });
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   createNotificationChannel();
-
-  //   if (Capacitor.getPlatform() !== 'web') {
-  //     // For Android, no need to explicitly request permission. Permissions are handled during registration.
-  //     if (Capacitor.getPlatform() === 'ios') {
-  //       PushNotifications.requestPermission().then((result) => {
-  //         if (result.granted) {
-  //           // Register for push notifications if permission is granted
-  //           PushNotifications.register();
-  //         } else {
-  //           console.log('Push notification permission denied');
-  //         }
-  //       }).catch((error) => {
-  //         console.error('Error requesting push notification permission:', error);
-  //       });
-  //     }
-
-  //     // Handle push notifications
-  //     PushNotifications.addListener('pushNotificationReceived', (notification) => {
-  //       console.log('Push notification received:', notification);
-  //       setNotifications((prev) => [
-  //         ...prev,
-  //         { title: 'Push Notification', message: notification.body },
-  //       ]);
-  //       setUnreadCount((prev) => (prev || 0) + 1);
-
-  //       // Create local notification (optional, but makes it show up in notification drawer)
-  //       PushNotifications.create({
-  //         id: 'local-notification-id',
-  //         title: notification.title,
-  //         body: notification.body,
-  //         android: {
-  //           channelId: 'default',
-  //         },
-  //       });
-  //     });
-
-  //     PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-  //       console.log('Push notification action performed:', notification);
-  //     });
-
-  //     // Cleanup listeners on unmount
-  //     return () => {
-  //       PushNotifications.removeAllListeners();
-  //     };
-  //   }
-  // }, []);
-
-
-  // const markAllRead = () => {
-  //   setRead(0);
-  // };
-
-//   return (
-//     <Box sx={{ flexShrink: 0, ml: 0.75 }}>
-//       <IconButton
-//         color="secondary"
-//         variant="light"
-//         sx={{ color: 'text.primary', bgcolor: open ? iconBackColorOpen : 'transparent' }}
-//         aria-label="open profile"
-//         ref={anchorRef}
-//         aria-controls={open ? 'profile-grow' : undefined}
-//         aria-haspopup="true"
-//         onClick={handleToggle}
-//       >
-//         <Badge
-//           badgeContent={unreadCount > 0 ? unreadCount : null}
-//           color="error"
-//           sx={{
-//             '& .MuiBadge-badge': {
-//               right: 10,
-//               top: 4,
-//               minWidth: '16px',
-//               height: '16px',
-//               fontSize: '0.75rem',
-//             },
-//           }}
-//         >
-//           {/* <NotificationsNoneOutlinedIcon sx={{ fontSize: '30px' }} /> */}
-//           <img src={bellNotification} alt='Notification' />
-//         </Badge>
-//       </IconButton>
-//       <Popper
-//         placement={matchesXs ? 'bottom-start' : 'bottom-start'}
-//         open={open}
-//         anchorEl={anchorRef.current}
-//         role={undefined}
-//         transition
-//         disablePortal
-//         modifiers={[
-//           {
-//             name: 'offset',
-//             options: {
-//               offset: [0, 10],
-//             },
-//           },
-//         ]}
-//         style={{
-//           zIndex: 1500,
-//         }}
-//       >
-//         {({ TransitionProps }) => (
-//           <Transitions type="grow" position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
-//             <Paper sx={{ boxShadow: theme.customShadows.z1, width: '100%', minWidth: 400, maxWidth: { xs: 400, md: 600 } }}>
-//               <ClickAwayListener onClickAway={handleClose}>
-//                 <MainCard
-//                   title="All Notification"
-//                   elevation={0}
-//                   border={false}
-//                   content={false}
-//                   sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
-//                   {notifications.length > 0 ? (
-//                     <List component="nav" sx={{ p: 0, bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
-//                       {notifications.map((notification, index) => (
-//                         <ListItemButton key={index}>
-//                           <ListItemText
-//                             primary={
-//                               <Typography variant="h6">
-//                                 {notification.title || 'Notification'}
-//                               </Typography>
-//                             }
-//                             secondary={
-//                               <Typography variant="subtitle1">
-//                                 {notification.message || 'No details available.'}
-//                               </Typography>
-//                             }
-//                           />
-//                         </ListItemButton>
-//                       ))}
-//                     </List>
-//                   ) : (
-//                     <Typography variant="body2" align="center" color="text.secondary" sx={{ m: 2 }} > No new notifications. </Typography>
-//                   )}
-
-//                 </MainCard>
-//               </ClickAwayListener>
-//             </Paper>
-//           </Transitions>
-//         )}
-//       </Popper>
-//     </Box>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // working with badge and adding push notification
-
-// import { useEffect, useRef, useState } from 'react';
-
-
-// // material-ui
-// import { useTheme } from '@mui/material/styles';
-// import useMediaQuery from '@mui/material/useMediaQuery';
-// import ClickAwayListener from '@mui/material/ClickAwayListener';
-// import IconButton from '@mui/material/IconButton';
-// import List from '@mui/material/List';
-// import ListItemButton from '@mui/material/ListItemButton';
-// import ListItemText from '@mui/material/ListItemText';
-// import Paper from '@mui/material/Paper';
-// import Popper from '@mui/material/Popper';
-// import Typography from '@mui/material/Typography';
-// import Box from '@mui/material/Box';
-// import bellNotification from 'assets/images/bellNotification.svg';
-
-// // project import
-// import MainCard from 'components/MainCard';
-// import Transitions from 'components/@extended/Transitions';
-// import { Badge } from '@mui/material';
-
-
-// // Notification 
-// import { PushNotifications } from '@capacitor/push-notifications';
-// import { Capacitor } from '@capacitor/core';
-
-
-// export default function Notification() {
-//   const theme = useTheme();
-//   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
-
-
-
-//   const anchorRef = useRef(null);
-//   const [read, setRead] = useState(2);
-//   const [open, setOpen] = useState(false);
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState(0)
-
-//   const handleToggle = () => {
-//     setOpen((prevOpen) => !prevOpen);
-//   };
-
-//   const handleClose = (event) => {
-//     if (anchorRef.current && anchorRef.current.contains(event.target)) {
-//       return;
-//     }
-//     setOpen(false);
-//   };
-
-//   const iconBackColorOpen = 'grey.100';
-
-//   const token = localStorage.getItem('power_token');
-//   const bio = JSON.parse(localStorage.getItem("assigned_data"));
-//   console.log(bio, 'biioooo')
-
-//   const role = localStorage.getItem("role")
-
-//   useEffect(() => {
-//     let ws; // WebSocket instance
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     // Determine WebSocket URL based on the user's role and the notification type
-//     if (role === "super admin") {
-//       ws = new WebSocket(`${wsBaseURL}/ws/superadmin/?token=${token}`);
-//     } else {
-//       // For other roles
-//       ws = new WebSocket(`${wsBaseURL}/ws/user/${bio.id}/?token=${token}`);
-//     }
-
-//     ws.onopen = () => console.log("WebSocket connected.");
-//     ws.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Notification received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "New Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     ws.onerror = (error) => console.error("WebSocket error:", error.message);
-//     ws.onclose = () => console.log("WebSocket disconnected.");
-
-//     return () => ws.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-//   // WebSocket for Order-Specific Updates
-//   useEffect(() => {
-//     if (!bio || !bio.currentOrderId) return;
-
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     const wsOrder = new WebSocket(`${wsBaseURL}/ws/order_status/${bio.currentOrderId}/?token=${token}`);
-
-//     wsOrder.onopen = () => console.log("Order-specific WebSocket connected.");
-//     wsOrder.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Order update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Order Update", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsOrder.onerror = (error) => console.error("WebSocket error:", error.message);
-//     wsOrder.onclose = () => console.log("Order-specific WebSocket disconnected.");
-
-//     return () => wsOrder.close(); // Cleanup WebSocket on component unmount
-//   }, [bio?.currentOrderId, token]);
-
-//   // WebSocket for Payouts
-//   useEffect(() => {
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-//     let wsPayout;
-//     if (role === "superadmin") {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/superadmin/?token=${token}`);
-//     } else {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/user/${bio.id}/?token=${token}`);
-//     }
-
-//     wsPayout.onopen = () => console.log("Payout WebSocket connected.");
-//     wsPayout.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Payout update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Payout Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsPayout.onerror = (error) => console.error("Payout WebSocket error:", error.message);
-//     wsPayout.onclose = () => console.log("Payout WebSocket disconnected.");
-
-//     return () => wsPayout.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-
-
-
-//   // notification
-//   useEffect(() => {
-//     if (Capacitor.getPlatform() !== 'web') {
-//       // Request permission for push notifications
-//       PushNotifications.requestPermission().then((result) => {
-//         if (result.granted) {
-//           // Register for push notifications if permission is granted
-//           PushNotifications.register();
-//         } else {
-//           console.log('Push notification permission denied');
-//         }
-//       });
-
-//       // Handle push notifications
-//       PushNotifications.addListener('pushNotificationReceived', (notification) => {
-//         console.log('Push notification received:', notification);
-//         setNotifications((prev) => [
-//           ...prev,
-//           { title: 'Push Notification', message: notification.body },
-//         ]);
-//         setUnreadCount((prev) => (prev || 0) + 1);
-//       });
-
-//       PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-//         console.log('Push notification action performed:', notification);
-//       });
-
-//       // Cleanup listeners on unmount
-//       return () => {
-//         PushNotifications.removeAllListeners();
-//       };
-//     }
-//   }, []);
-
-
-
-//   const markAllRead = () => {
-//     setRead(0);
-//   };
-
-
-//   return (
-//     <Box sx={{ flexShrink: 0, ml: 0.75 }}>
-//       <IconButton
-//         color="secondary"
-//         variant="light"
-//         sx={{ color: 'text.primary', bgcolor: open ? iconBackColorOpen : 'transparent' }}
-//         aria-label="open profile"
-//         ref={anchorRef}
-//         aria-controls={open ? 'profile-grow' : undefined}
-//         aria-haspopup="true"
-//         onClick={handleToggle}
-//       >
-//         <Badge
-//           badgeContent={unreadCount > 0 ? unreadCount : null}
-//           color="error"
-//           sx={{
-//             '& .MuiBadge-badge': {
-//               right: 10,
-//               top: 4,
-//               minWidth: '16px',
-//               height: '16px',
-//               fontSize: '0.75rem',
-//             },
-//           }}
-//         >
-//           {/* <NotificationsNoneOutlinedIcon sx={{ fontSize: '30px' }} /> */}
-//           <img src={bellNotification} alt='Notification' />
-//         </Badge>
-//       </IconButton>
-//       <Popper
-//         placement={matchesXs ? 'bottom-start' : 'bottom-start'}
-//         open={open}
-//         anchorEl={anchorRef.current}
-//         role={undefined}
-//         transition
-//         disablePortal
-//         modifiers={[
-//           {
-//             name: 'offset',
-//             options: {
-//               offset: [0, 10],
-//             },
-//           },
-//         ]}
-//         style={{
-//           zIndex: 1500,
-//         }}
-//       >
-//         {({ TransitionProps }) => (
-//           <Transitions type="grow" position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
-//             <Paper sx={{ boxShadow: theme.customShadows.z1, width: '100%', minWidth: 400, maxWidth: { xs: 400, md: 600 } }}>
-//               <ClickAwayListener onClickAway={handleClose}>
-//                 <MainCard
-//                   title="All Notification"
-//                   elevation={0}
-//                   border={false}
-//                   content={false}
-//                   sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
-//                   {notifications.length > 0 ? (
-//                     <List component="nav" sx={{ p: 0, bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
-//                       {notifications.map((notification, index) => (
-//                         <ListItemButton key={index}>
-//                           <ListItemText
-//                             primary={
-//                               <Typography variant="h6">
-//                                 {notification.title || 'Notification'}
-//                               </Typography>
-//                             }
-//                             secondary={
-//                               <Typography variant="subtitle1">
-//                                 {notification.message || 'No details available.'}
-//                               </Typography>
-//                             }
-//                           />
-//                         </ListItemButton>
-//                       ))}
-//                     </List>
-//                   ) : (
-//                     <Typography variant="body2" align="center" color="text.secondary" sx={{ m: 2 }} > No new notifications. </Typography>
-//                   )}
-
-//                 </MainCard>
-//               </ClickAwayListener>
-//             </Paper>
-//           </Transitions>
-//         )}
-//       </Popper>
-//     </Box>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // working with badge 
-
-// import { useEffect, useRef, useState } from 'react';
-
-
-// // material-ui
-// import { useTheme } from '@mui/material/styles';
-// import useMediaQuery from '@mui/material/useMediaQuery';
-// import ClickAwayListener from '@mui/material/ClickAwayListener';
-// import IconButton from '@mui/material/IconButton';
-// import List from '@mui/material/List';
-// import ListItemButton from '@mui/material/ListItemButton';
-// import ListItemText from '@mui/material/ListItemText';
-// import Paper from '@mui/material/Paper';
-// import Popper from '@mui/material/Popper';
-// import Typography from '@mui/material/Typography';
-// import Box from '@mui/material/Box';
-// import bellNotification from 'assets/images/bellNotification.svg';
-
-// // project import
-// import MainCard from 'components/MainCard';
-// import Transitions from 'components/@extended/Transitions';
-
-// // assets
-// import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-// import { Badge } from '@mui/material';
-
-// export default function Notification() {
-//   const theme = useTheme();
-//   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
-
-
-
-//   const anchorRef = useRef(null);
-//   const [read, setRead] = useState(2);
-//   const [open, setOpen] = useState(false);
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState(0)
-
-//   const handleToggle = () => {
-//     setOpen((prevOpen) => !prevOpen);
-//   };
-
-//   const handleClose = (event) => {
-//     if (anchorRef.current && anchorRef.current.contains(event.target)) {
-//       return;
-//     }
-//     setOpen(false);
-//   };
-
-//   const iconBackColorOpen = 'grey.100';
-
-//   const token = localStorage.getItem('power_token');
-//   const bio = JSON.parse(localStorage.getItem("assigned_data"));
-//   console.log(bio, 'biioooo')
-
-//   const role = localStorage.getItem("role")
-
-//   useEffect(() => {
-//     let ws; // WebSocket instance
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     // Determine WebSocket URL based on the user's role and the notification type
-//     if (role === "super admin") {
-//       ws = new WebSocket(`${wsBaseURL}/ws/superadmin/?token=${token}`);
-//     } else {
-//       // For other roles
-//       ws = new WebSocket(`${wsBaseURL}/ws/user/${bio.id}/?token=${token}`);
-//     }
-
-//     ws.onopen = () => console.log("WebSocket connected.");
-//     ws.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Notification received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "New Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     ws.onerror = (error) => console.error("WebSocket error:", error.message);
-//     ws.onclose = () => console.log("WebSocket disconnected.");
-
-//     return () => ws.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-//   // WebSocket for Order-Specific Updates
-//   useEffect(() => {
-//     if (!bio || !bio.currentOrderId) return;
-
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     const wsOrder = new WebSocket(`${wsBaseURL}/ws/order_status/${bio.currentOrderId}/?token=${token}`);
-
-//     wsOrder.onopen = () => console.log("Order-specific WebSocket connected.");
-//     wsOrder.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Order update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Order Update", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsOrder.onerror = (error) => console.error("WebSocket error:", error.message);
-//     wsOrder.onclose = () => console.log("Order-specific WebSocket disconnected.");
-
-//     return () => wsOrder.close(); // Cleanup WebSocket on component unmount
-//   }, [bio?.currentOrderId, token]);
-
-//   // WebSocket for Payouts
-//   useEffect(() => {
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-//     let wsPayout;
-//     if (role === "superadmin") {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/superadmin/?token=${token}`);
-//     } else {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/user/${bio.id}/?token=${token}`);
-//     }
-
-//     wsPayout.onopen = () => console.log("Payout WebSocket connected.");
-//     wsPayout.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Payout update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Payout Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsPayout.onerror = (error) => console.error("Payout WebSocket error:", error.message);
-//     wsPayout.onclose = () => console.log("Payout WebSocket disconnected.");
-
-//     return () => wsPayout.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-
-
-//   const markAllRead = () => {
-//     setRead(0);
-//   };
-
-
-//   return (
-//     <Box sx={{ flexShrink: 0, ml: 0.75 }}>
-//       <IconButton
-//         color="secondary"
-//         variant="light"
-//         sx={{ color: 'text.primary', bgcolor: open ? iconBackColorOpen : 'transparent' }}
-//         aria-label="open profile"
-//         ref={anchorRef}
-//         aria-controls={open ? 'profile-grow' : undefined}
-//         aria-haspopup="true"
-//         onClick={handleToggle}
-//       >
-//         <Badge
-//           badgeContent={unreadCount > 0 ? unreadCount : null}
-//           color="error"
-//           sx={{
-//             '& .MuiBadge-badge': {
-//               right: 10,
-//               top: 4,
-//               minWidth: '16px',
-//               height: '16px',
-//               fontSize: '0.75rem',
-//             },
-//           }}
-//         >
-//           {/* <NotificationsNoneOutlinedIcon sx={{ fontSize: '30px' }} /> */}
-//           <img src={bellNotification} alt='Notification' />
-//         </Badge>
-//       </IconButton>
-//       <Popper
-//         placement={matchesXs ? 'bottom-start' : 'bottom-start'}
-//         open={open}
-//         anchorEl={anchorRef.current}
-//         role={undefined}
-//         transition
-//         disablePortal
-//         modifiers={[
-//           {
-//             name: 'offset',
-//             options: {
-//               offset: [0, 10],
-//             },
-//           },
-//         ]}
-//         style={{
-//           zIndex: 1500,
-//         }}
-//       >
-//         {({ TransitionProps }) => (
-//           <Transitions type="grow" position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
-//             <Paper sx={{ boxShadow: theme.customShadows.z1, width: '100%', minWidth: 400, maxWidth: { xs: 400, md: 600 } }}>
-//               <ClickAwayListener onClickAway={handleClose}>
-//                 <MainCard
-//                   title="All Notification"
-//                   elevation={0}
-//                   border={false}
-//                   content={false}
-//                   sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
-//                   {notifications.length > 0 ? (
-//                     <List component="nav" sx={{ p: 0, bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
-//                       {notifications.map((notification, index) => (
-//                         <ListItemButton key={index}>
-//                           <ListItemText
-//                             primary={
-//                               <Typography variant="h6">
-//                                 {notification.title || 'Notification'}
-//                               </Typography>
-//                             }
-//                             secondary={
-//                               <Typography variant="subtitle1">
-//                                 {notification.message || 'No details available.'}
-//                               </Typography>
-//                             }
-//                           />
-//                         </ListItemButton>
-//                       ))}
-//                     </List>
-//                   ) : (
-//                     <Typography variant="body2" align="center" color="text.secondary" sx={{ m: 2 }} > No new notifications. </Typography>
-//                   )}
-
-//                 </MainCard>
-//               </ClickAwayListener>
-//             </Paper>
-//           </Transitions>
-//         )}
-//       </Popper>
-//     </Box>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useEffect, useRef, useState } from 'react';
-
-// // material-ui
-// import { useTheme } from '@mui/material/styles';
-// import useMediaQuery from '@mui/material/useMediaQuery';
-// import ClickAwayListener from '@mui/material/ClickAwayListener';
-// import IconButton from '@mui/material/IconButton';
-// import List from '@mui/material/List';
-// import ListItemButton from '@mui/material/ListItemButton';
-// import ListItemText from '@mui/material/ListItemText';
-// import Paper from '@mui/material/Paper';
-// import Popper from '@mui/material/Popper';
-// import Tooltip from '@mui/material/Tooltip';
-// import Typography from '@mui/material/Typography';
-// import Box from '@mui/material/Box';
-// import bellNotification from 'assets/images/bellNotification.svg';
-
-// // project import
-// import MainCard from 'components/MainCard';
-// import Transitions from 'components/@extended/Transitions';
-
-// // assets
-// import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
-
-// export default function Notification() {
-//   const theme = useTheme();
-//   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
-
-
-
-//   const anchorRef = useRef(null);
-//   const [read, setRead] = useState(2);
-//   const [open, setOpen] = useState(false);
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState()
-
-//   const handleToggle = () => {
-//     setOpen((prevOpen) => !prevOpen);
-//   };
-
-//   const handleClose = (event) => {
-//     if (anchorRef.current && anchorRef.current.contains(event.target)) {
-//       return;
-//     }
-//     setOpen(false);
-//   };
-
-//   const iconBackColorOpen = 'grey.100';
-
-//   const token = localStorage.getItem('power_token');
-//   const bio = JSON.parse(localStorage.getItem("assigned_data"));
-//   console.log(bio, 'biioooo')
-
-//   const role = localStorage.getItem("role")
-
-//   useEffect(() => {
-//     let ws; // WebSocket instance
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     // Determine WebSocket URL based on the user's role and the notification type
-//     if (role === "super admin") {
-//       ws = new WebSocket(`${wsBaseURL}/ws/superadmin/?token=${token}`);
-//     } else {
-//       // For other roles
-//       ws = new WebSocket(`${wsBaseURL}/ws/user/${bio.id}/?token=${token}`);
-//     }
-
-//     ws.onopen = () => console.log("WebSocket connected.");
-//     ws.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Notification received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "New Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     ws.onerror = (error) => console.error("WebSocket error:", error.message);
-//     ws.onclose = () => console.log("WebSocket disconnected.");
-
-//     return () => ws.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-//   // WebSocket for Order-Specific Updates
-//   useEffect(() => {
-//     if (!bio || !bio.currentOrderId) return;
-
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-
-//     const wsOrder = new WebSocket(`${wsBaseURL}/ws/order_status/${bio.currentOrderId}/?token=${token}`);
-
-//     wsOrder.onopen = () => console.log("Order-specific WebSocket connected.");
-//     wsOrder.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Order update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Order Update", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsOrder.onerror = (error) => console.error("WebSocket error:", error.message);
-//     wsOrder.onclose = () => console.log("Order-specific WebSocket disconnected.");
-
-//     return () => wsOrder.close(); // Cleanup WebSocket on component unmount
-//   }, [bio?.currentOrderId, token]);
-
-//   // WebSocket for Payouts
-//   useEffect(() => {
-//     const wsBaseURL = "wss://auth2.upicollect.com";
-//     let wsPayout;
-//     if (role === "superadmin") {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/superadmin/?token=${token}`);
-//     } else {
-//       wsPayout = new WebSocket(`${wsBaseURL}/ws/payout/user/${bio.id}/?token=${token}`);
-//     }
-
-//     wsPayout.onopen = () => console.log("Payout WebSocket connected.");
-//     wsPayout.onmessage = (event) => {
-//       const data = JSON.parse(event.data);
-//       console.log("Payout update received:", data);
-//       setNotifications((prev) => [
-//         ...prev,
-//         { title: "Payout Notification", message: data.message },
-//       ]);
-//       setUnreadCount((prev) => (prev || 0) + 1);
-//     };
-//     wsPayout.onerror = (error) => console.error("Payout WebSocket error:", error.message);
-//     wsPayout.onclose = () => console.log("Payout WebSocket disconnected.");
-
-//     return () => wsPayout.close(); // Cleanup WebSocket on component unmount
-//   }, [role, bio?.id, token]);
-
-
-
-//   const markAllRead = () => {
-//     setRead(0);
-//   };
-
-
-//   return (
-//     <Box sx={{ flexShrink: 0, ml: 0.75 }}>
-//       <IconButton
-//         color="secondary"
-//         variant="light"
-//         sx={{ color: 'text.primary', bgcolor: open ? iconBackColorOpen : 'transparent' }}
-//         aria-label="open profile"
-//         ref={anchorRef}
-//         aria-controls={open ? 'profile-grow' : undefined}
-//         aria-haspopup="true"
-//         onClick={handleToggle}
-//       >
-//         <img src={bellNotification} alt="bellNotification" />
-//       </IconButton>
-//       <Popper
-//         placement={matchesXs ? 'bottom-start' : 'bottom-start'}
-//         open={open}
-//         anchorEl={anchorRef.current}
-//         role={undefined}
-//         transition
-//         disablePortal
-//         modifiers={[
-//           {
-//             name: 'offset',
-//             options: {
-//               offset: [0, 10],
-//             },
-//           },
-//         ]}
-//         style={{
-//           zIndex: 1500,
-//         }}
-//       >
-//         {({ TransitionProps }) => (
-//           <Transitions type="grow" position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
-//             <Paper sx={{ boxShadow: theme.customShadows.z1, width: '100%', minWidth: 400, maxWidth: { xs: 400, md: 600 } }}>
-//               <ClickAwayListener onClickAway={handleClose}>
-//                 <MainCard
-//                   title="All Notification"
-//                   elevation={0}
-//                   border={false}
-//                   content={false}
-//                   secondary={
-//                     <>
-//                       {read > 0 && (
-//                         <Tooltip title="Mark all as read">
-//                           {/* <IconButton color="success" size="small" onClick={markAllRead}>
-//                             <CheckCircleOutlined style={{ fontSize: '1.15rem' }} />
-//                           </IconButton> */}
-//                         </Tooltip>
-//                       )}
-//                     </>
-//                   }
-//                   sx={{ '& .MuiCardHeader-root': { padding: '10px', }, }} >
-//                   {notifications.length > 0 ? (
-//                     <List component="nav" sx={{ p: 0, bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
+//                     <List component="nav" sx={{ p: 0, maxHeight: '300px', overflow: 'auto', bgcolor: '#F2F6FC', color: 'text.primary', borderRadius: 1, boxShadow: 1, '& .MuiListItemButton-root': { py: 1.5, px: 1.5, border: '6px solid white', '&:hover': { bgcolor: '#e3ebf6' }, '&.Mui-selected': { bgcolor: '#e3ebf6', color: 'text.primary' }, }, '& .MuiTypography-h6': { fontWeight: 'bold' }, '& .MuiTypography-subtitle1': { color: '#757575' }, '& .MuiTypography-caption': { fontSize: '0.75rem', color: '#9e9e9e' }, }} >
 //                       {notifications.map((notification, index) => (
 //                         <ListItemButton key={index}>
 //                           <ListItemText

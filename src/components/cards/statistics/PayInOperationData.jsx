@@ -422,7 +422,7 @@ export default function PayInOperationData({ data, onSendStatusCode }) {
                                 gap: 2, // Add space between buttons
                             }}
                         >
-                            <Grid container justifyContent="center" xs={10} md={10} lg={10} xl={9}>
+                            <Grid container justifyContent="center">
                                 <Button
                                     fullWidth
                                     onClick={() => ApprovedOrders("APPROVED")}

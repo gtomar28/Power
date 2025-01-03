@@ -14,7 +14,7 @@ import { useTheme } from '@mui/material/styles';
 import NoDataFound from 'assets/images/noDataFound.svg'
 
 export default function PayInOperationsDefault() {
-    const [value, setValue] = React.useState('');
+    const [value, setValue] = useState('');
 
     const userLocalData = JSON.parse(localStorage.getItem('assigned_data'));
     const role = localStorage.getItem('role')
@@ -43,9 +43,7 @@ export default function PayInOperationsDefault() {
     const handleChangeRowsPerPage = (event) => {
         const newRowsPerPage = parseInt(event.target.value, 10);
         setRowsPerPage(newRowsPerPage);
-        setPage(0); // Reset to the first page
-
-        // Optionally update the options dynamically
+        setPage(0);
         if (!rowsPerPageOptions.includes(newRowsPerPage)) {
             setRowsPerPageOptions([...rowsPerPageOptions, newRowsPerPage].sort((a, b) => a - b));
         }
@@ -56,11 +54,10 @@ export default function PayInOperationsDefault() {
         try {
             setShowLoader(true);
             const orderResponse = await getAllOrders(searchTerm === 'All' ? '' : searchTerm, page + 1, activeButton, agent);
-            console.log(orderResponse)
             if (orderResponse?.status === 200 && orderResponse?.data?.results)
                 setShowLoader(false);
-            setCreateOrder(orderResponse?.data.results);
-            setTotalPages(orderResponse.data.count);
+                setCreateOrder(orderResponse?.data.results);
+                setTotalPages(orderResponse.data.count);
         } catch (err) {
             console.log(err);
         }

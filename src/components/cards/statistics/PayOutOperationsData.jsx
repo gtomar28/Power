@@ -21,110 +21,107 @@ import NoDataFound from 'assets/images/noDataFound.svg'
 export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
 
 
-    const [utr, setutr] = useState("");
     const [showLoader, setShowLoader] = useState(false);
-    const [utrValidError, setutrValidError] = useState(false);
-    const [utrIsRequiredError, setutrIsRequiredlError] = useState(false);
-    const [remark, setRemark] = useState("");
-    const [remarkValidError, setRemarkValidError] = useState(false);
-    const [remarkIsRequiredError, setRemarkIsRequiredlError] = useState(false);
     const [OrderDetails, setOrderDetails] = useState('');
-    const [image, setImage] = useState();
-    const [imageValidError, setImageValidError] = useState(false);
-    const [imageIsRequiredError, setImageIsRequiredlError] = useState(false);
 
+
+    const [utr, setUtr] = useState('');
+    const [image, setImage] = useState(null);
+    const [remark, setRemark] = useState('');
+    const [isFormValid, setIsFormValid] = useState(false);
+
+    const [utrIsRequiredError, setUtrIsRequiredError] = useState(false);
+    const [utrValidError, setUtrValidError] = useState(false);
+    const [imageIsRequiredError, setImageIsRequiredError] = useState(false);
+    const [imageValidError, setImageValidError] = useState(false);
+    const [remarkIsRequiredError, setRemarkIsRequiredError] = useState(false);
+    const [remarkValidError, setRemarkValidError] = useState(false);
     const [openSubmittedModal, setOpenSubmittedModal] = React.useState(false);
     const [openApproveModal, setOpenApproveModal] = React.useState(false);
     const [userStatus, setUserStatus] = React.useState('');
+
+    const [submitDataModal, setSubmitDataModal] = React.useState(false);
+
+    console.log(userStatus, 'userStatus user user user')
     const [OrderId, setOrderId] = useState();
     const [Ids, setIds] = useState();
     const [Price, setPrice] = useState();
     const [userOnine, setuserOnine] = useState();
 
-    const role = localStorage.getItem('role')
+    const role = localStorage.getItem('role');
 
     const handleUTR = (value) => {
-        setutr(value);
-        const rex = /^[A-Za-z0-12]{10,20}$/;
-        if (value === "") {
-            setutrValidError(false);
-            setutrIsRequiredlError(true);
-        } else if (rex.test(value) === false) {
-            setutrValidError(true);
-            setutrIsRequiredlError(false);
-        } else {
-            setutrValidError(false);
-            setutrIsRequiredlError(false);
-        }
-    }
-
+        setUtr(value);
+        setUtrIsRequiredError(!value);
+        setUtrValidError(value && !/^\d{10,12}$/.test(value)); // Example UTR validation
+    };
+    
     const handleImage = (event) => {
         const file = event.target.files[0];
-        console.log(file, "Image")
-        if (!file) {
-            setImageValidError(false);
-            setImageIsRequiredlError(true);
-            return;
-        }
-        const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-        if (!validTypes.includes(file.type)) {
-            setImageValidError(true);
-            setImageIsRequiredlError(false);
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            setImageValidError(true);
-            return;
-        }
-        setImage(file);
-        setImageValidError(false);
-        setImageIsRequiredlError(false);
+        console.log(file);
+        setImage(file)
+        // if (file) {
+        //     const isValidType = file.type.startsWith('image/');
+        //     const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB size limit
+
+        //     // Update validation errors
+        //     setImageValidError(!isValidType || !isValidSize);
+        //     setImageIsRequiredError(false);
+
+        //     // Set the file if valid, otherwise reset it to null
+        //     setImage(isValidType && isValidSize ? file : null);
+        // } else {
+        //     setImageIsRequiredError(true);
+        //     setImage(null); // Reset image if no file is selected
+        // }
     };
+
 
 
     const handleRemark = (value) => {
         setRemark(value);
-        const rex = /^[a-zA-Z\s]*$/;
-        if (value === "") {
-            setRemarkValidError(false);
-            setRemarkIsRequiredlError(true);
-        } else if (rex.test(value) === false) {
-            setRemarkValidError(true);
-            setRemarkIsRequiredlError(false);
-        } else {
-            setRemarkValidError(false);
-            setRemarkIsRequiredlError(false);
-        }
-    }
+        setRemarkIsRequiredError(!value);
+        setRemarkValidError(value && value.length < 5); // Example remark validation
+    };
+
+    // Update form validity whenever field states change
+    useEffect(() => {
+        const isUTRValid = utr && !utrIsRequiredError && !utrValidError;
+        const isImageValid = image && !imageIsRequiredError && !imageValidError;
+        const isRemarkValid = remark && !remarkIsRequiredError && !remarkValidError;
+        setIsFormValid(isUTRValid && isImageValid && isRemarkValid);
+    }, [utr, utrIsRequiredError, utrValidError, image, imageIsRequiredError, imageValidError, remark, remarkIsRequiredError, remarkValidError]);
+
 
     const ApprovedOrders = async () => {
-        if (!utr) setutrIsRequiredlError(true);
-        if (!remark) setRemarkIsRequiredlError(true);
-        if (!image) setImageIsRequiredlError(true);
+        if (!utr) { setUtrIsRequiredError(true); return; }
+        if (!remark) { setRemarkIsRequiredError(true); return; }
+        if (!image) { setImageIsRequiredError(true); return; }
 
-        if (utr && remark && image) {
-            const formData = new FormData();
-            { role === 'agent' && (formData.append('action', 'SUBMIT')) };
-            formData.append('utr', utr);
-            formData.append('upload_slip', image);
-            formData.append('remark', remark);
+        const formData = new FormData();
+        if (role === 'agent') {
+            formData.append('action', 'SUBMIT');
+        }
+        formData.append('utr', utr);
+        formData.append('upload_slip', image);
+        formData.append('remark', remark);
 
-            try {
-                setShowLoader(true);
-                const response = await approvePayout(OrderId, formData);
-                console.log(response, "Done Order")
-                if (response?.status === 200) {
-                    onSendStatusCode(false);
-                    setOpenSubmittedModal(false)
-                    setShowLoader(false);
-                    setutr('');
-                    setRemark('');
-                    setImage('');
-                }
-            } catch (err) {
-                setShowLoader(false);
-                console.error(err);
+        try {
+            setShowLoader(true);
+            const response = await approvePayout(OrderId, formData);
+            console.log(response, "Done Order");
+
+            if (response?.status === 200) {
+                onSendStatusCode(false);
+                setSubmitDataModal(false);
+                setUtr('');
+                setRemark('');
+                setImage('');
             }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setShowLoader(false);
         }
     };
 
@@ -240,11 +237,7 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
 
     return (
         <>
-            {
-                showLoader && (
-                    <HashLoader />
-                )
-            }
+            { showLoader && ( <HashLoader /> ) }
             {payOutData.length > 0 ?
                 <Box>
                     {payOutData.map((row) => (
@@ -321,16 +314,7 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                     <Grid>
                                                         <Typography variant="body" sx={{ fontWeight: 400, color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} > {row?.account_number} </Typography>
                                                     </Grid>
-                                                    <Button
-                                                        onClick={() => handleCopyToClipboard(row?.account_number)}
-                                                        sx={{
-                                                            ml: 1,
-                                                            minWidth: 0,
-                                                            padding: '6px',
-                                                            color: '#666',
-                                                            '&:hover': { color: '#333' },
-                                                        }}
-                                                    >
+                                                    <Button onClick={() => handleCopyToClipboard(row?.account_number)} sx={{ ml: 1, minWidth: 0, padding: '6px', color: '#666', '&:hover': { color: '#333' }, }} >
                                                         <CopyIcon />
                                                     </Button>
                                                 </Grid>
@@ -345,16 +329,7 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                     <Grid>
                                                         <Typography variant="body" sx={{ fontWeight: 400, color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} > {row?.ifsc} </Typography>
                                                     </Grid>
-                                                    <Button
-                                                        onClick={() => handleCopyToClipboard(row?.ifsc)}
-                                                        sx={{
-                                                            ml: 1,
-                                                            minWidth: 0,
-                                                            padding: '6px',
-                                                            color: '#666',
-                                                            '&:hover': { color: '#333' },
-                                                        }}
-                                                    >
+                                                    <Button onClick={() => handleCopyToClipboard(row?.ifsc)} sx={{ ml: 1, minWidth: 0, padding: '6px', color: '#666', '&:hover': { color: '#333' }, }} >
                                                         <CopyIcon />
                                                     </Button>
                                                 </Grid>
@@ -439,51 +414,18 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                     setUserStatus(
                                                         role !== 'agent'
                                                             ?
-                                                            (row?.approval_status === 'CREATED' ? 'ASSIGN' : row?.approval_status === 'ASSIGNED' ? 'ASSIGNED' : row?.approval_status === 'SUBMITTED' ? 'SUBMITTED' : 'APPROVED')
+                                                            (row?.approval_status === 'CREATED' ? 'ASSIGN' : row?.approval_status === 'ASSIGNED' ? 'ASSIGNED' : row?.approval_status === 'SUBMITTED' ? 'SUBMITTED' : '')
                                                             :
-                                                            (row?.approval_status === 'CREATED' ? 'SUBMIT' : row?.approval_status === 'SUBMITTED' ? 'PROCESSING' : 'APPROVED')
+                                                            (row?.approval_status === 'ASSIGNED' ? 'SUBMIT' : row?.approval_status === 'SUBMITTED' ? 'PROCESSING' : row?.approval_status === 'APPROVED' ? 'APPROVED' : '')
                                                     );
                                                 }}
-                                                disabled={row?.approval_status === "APPROVED"} // Disable button when status is APPROVED
-                                                sx={{
-                                                    width: 'fit-content',
-                                                    textTransform: 'none',
-                                                    borderRadius: '20px',
-                                                    px: 3,
-                                                    py: 0.5,
-                                                    fontSize: '14px',
-                                                    fontWeight: 500,
-                                                    backgroundColor:
-                                                        row?.approval_status === 'CREATED' ? role !== 'agent' ? '#2C6DB5' : '#5B3CA1'
-                                                            : row?.approval_status === 'ASSIGNED' ? '#2C6DB5'
-                                                                : row?.approval_status === 'SUBMITTED' ? '#E6B400'
-                                                                    : row?.approval_status === "APPROVED" ? '#22C55D'
-                                                                        : '#2C6DB51F',
-                                                    color: '#fff',
-                                                    boxShadow: 'none',
-                                                    border: 'none',
-                                                    outline: 'none',
-                                                    '&:hover, &:active, &:focus, &:disabled': {
-                                                        backgroundColor:
-                                                            row?.approval_status === 'CREATED' ? role !== 'agent' ? '#2C6DB5' : '#5B3CA1'
-                                                                : row?.approval_status === 'ASSIGNED' ? '#2C6DB5'
-                                                                    : row?.approval_status === 'SUBMITTED' ? '#E6B400'
-                                                                        : row?.approval_status === "APPROVED" ? '#0e9c42'
-                                                                            : '#2C6DB51F',
-                                                        color: 'white',
-                                                        boxShadow: 'none',
-                                                    },
-                                                    '&:focus-visible': {
-                                                        outline: 'none',
-                                                        boxShadow: 'none',
-                                                    },
-                                                }}
+                                                disabled={row?.approval_status === "APPROVED"} sx={{ width: 'fit-content', textTransform: 'none', borderRadius: '20px', px: 3, py: 0.5, fontSize: '14px', fontWeight: 500, backgroundColor: row?.approval_status === 'CREATED' ? '#2C6DB5' : row?.approval_status === 'ASSIGNED' ? role === 'agent' ? '#5B3CA1' : '#2C6DB5' : row?.approval_status === 'SUBMITTED' ? '#E6B400' : row?.approval_status === "APPROVED" ? '#22C55D' : '#2C6DB51F', color: '#fff', boxShadow: 'none', border: 'none', outline: 'none', '&:hover, &:active, &:focus, &:disabled': { backgroundColor: row?.approval_status === 'CREATED' ? role !== 'agent' ? '#2C6DB5' : '#5B3CA1' : row?.approval_status === 'ASSIGNED' ? role === 'agent' ? '#5B3CA1' : '#2C6DB5' : row?.approval_status === 'SUBMITTED' ? '#E6B400' : row?.approval_status === "APPROVED" ? '#0e9c42' : '#2C6DB51F', color: 'white', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none', }, }}
                                             >
                                                 {role !== 'agent'
                                                     ?
-                                                    (row?.approval_status === 'CREATED' ? 'ASSIGN' : row?.approval_status === 'ASSIGNED' ? 'ASSIGNED' : row?.approval_status === 'SUBMITTED' ? 'SUBMITTED' : 'APPROVED')
+                                                    (row?.approval_status === 'CREATED' ? 'ASSIGN' : row?.approval_status === 'ASSIGNED' ? 'ASSIGNED' : row?.approval_status === 'SUBMITTED' ? 'SUBMITTED' : row?.approval_status === 'APPROVED' ? 'APPROVED' : '')
                                                     :
-                                                    (row?.approval_status === 'CREATED' ? 'SUBMIT' : row?.approval_status === 'SUBMITTED' ? 'PROCESSING' : 'APPROVED')
+                                                    (row?.approval_status === 'ASSIGNED' ? 'SUBMIT' : row?.approval_status === 'SUBMITTED' ? 'PROCESSING' : row?.approval_status === 'APPROVED' ? 'APPROVED' : '')
                                                 }
                                             </Button>
 
@@ -493,39 +435,17 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                             </Grid>
                         </Grid >
                     ))}
-
-
                     {/* Approve MOdal */}
-                    <Dialog
-                        onClose={() => setOpenSubmittedModal(false)}
-                        aria-labelledby="customized-dialog-title"
-                        open={openSubmittedModal}
-                        maxWidth="sm"
-                        fullWidth
-                        sx={{
-                            '& .MuiDialog-paper': {
-                                borderRadius: '24px 24px 24px 24px',
-                            },
-                        }}
-                    >
+                    <Dialog onClose={() => setOpenSubmittedModal(false)} aria-labelledby="customized-dialog-title" open={openSubmittedModal} maxWidth="sm" fullWidth sx={{ '& .MuiDialog-paper': { borderRadius: '24px 24px 24px 24px', }, }} >
                         <DialogTitle sx={{ m: 1.2, mb: 0, p: 2, backgroundColor: '#F2F6FC', borderRadius: '24px 24px 0px 0px', display: 'flex', flexDirection: 'column' }} id="customized-dialog-title">
                             <Typography sx={{ textAlign: 'center' }}> Amount </Typography>
                             <Typography variant='h1' sx={{ textAlign: 'center', color: '#EF4444', fontWeight: '700' }}> {Price} INR </Typography>
                         </DialogTitle>
-                        <IconButton
-                            aria-label="close"
-                            onClick={() => setOpenSubmittedModal(false)}
-                            sx={(theme) => ({
-                                position: 'absolute',
-                                right: 18,
-                                top: 18,
-                                color: theme.palette.grey[500],
-                            })}
-                        >
+                        <IconButton aria-label="close" onClick={() => setOpenSubmittedModal(false)} sx={(theme) => ({ position: 'absolute', right: 18, top: 18, color: theme.palette.grey[500], })} >
                             <CloseIcon />
                         </IconButton>
                         <DialogContent sx={{ m: 2, mt: 0, p: 2, borderTop: '1px solid #EDEDED', display: 'flex', flexDirection: 'column' }}>
-                            {userStatus === 'CREATED' &&
+                            {userStatus === 'ASSIGN' && (
                                 <TableContainer >
                                     <Table sx={{ width: '100%' }} aria-label="simple table">
                                         <TableHead>
@@ -538,11 +458,11 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                         </TableHead>
                                         <TableBody>
                                             {userOnine?.length !== 0 ? (
-                                                userOnine?.map((row) => {
+                                                userOnine?.map((row, index) => {
                                                     const role = getRole(row);
                                                     const status = getStatus(row.is_checked_in);
                                                     return (
-                                                        <TableRow key={row?.id} sx={{ backgroundColor: row?.id % 2 === 0 ? '#fff' : '#F2F6FC' }}>
+                                                        <TableRow key={row?.id} sx={{ backgroundColor: index % 2 !== 0 ? '#fff' : '#F2F6FC' }}>
                                                             <TableCell sx={{ py: 1.8 }}>{row?.name}</TableCell>
                                                             <TableCell sx={{ py: 1.8 }}>{row?.username}</TableCell>
                                                             <TableCell sx={{ py: 1.8 }}>{row?.upi_id}</TableCell>
@@ -571,8 +491,8 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
-                            }
-                            {userStatus === 'ASSIGNED' &&
+                            )}
+                            {(userStatus === 'SUBMIT' || userStatus === 'SUBMITTED') && (
                                 <Grid container>
                                     <Grid xs={12} md={6} sx={{ borderRight: '1px dashed #ddd', pr: 3 }}>
                                         <Grid
@@ -586,8 +506,8 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                             }}
                                         >
                                             {Object.entries(userData).map(([key, value]) => (
-                                                <>
-                                                    <Grid item xs={5} key={key}>
+                                                <React.Fragment key={key}>
+                                                    <Grid item xs={5}>
                                                         <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'start' }}>
                                                             {key}
                                                         </Typography>
@@ -597,77 +517,56 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                                                             {value}
                                                         </Typography>
                                                     </Grid>
-                                                </>
+                                                </React.Fragment>
                                             ))}
                                         </Grid>
                                     </Grid>
                                     <Grid xs={12} md={6}>
                                         <Grid fullWidth sx={{ m: 2 }}>
-                                            <Typography variant='body1'>Enter UTR*</Typography>
-                                            <OutlinedInput onChange={(e) => handleUTR(e.target.value)} value={utr} variant="outlined" placeholder='Remarks: Fake deposit' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', border: 'none', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
+                                            <Typography variant="body1">Enter UTR*</Typography>
+                                            <OutlinedInput onChange={(e) => handleUTR(e.target.value)} value={utr} variant="outlined" placeholder="Remarks: Fake deposit" sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', }} />
                                             {utrIsRequiredError && <Typography color="error">UTR is required.</Typography>}
                                             {utrValidError && (
                                                 <Typography sx={{ color: 'red', fontSize: '0.75rem', mt: 1 }}>
                                                     Please enter a valid UTR number
                                                 </Typography>
                                             )}
-                                            <Typography variant='body1'>Upload Slip*</Typography>
-                                            <OutlinedInput
-                                                type="file"
-                                                onChange={handleImage}
-                                                inputProps={{ accept: "image/*" }}
-                                            />
+
+                                            <Typography variant="body1">Upload Slip*</Typography>
+                                            <OutlinedInput type="file" onChange={handleImage} inputProps={{ accept: 'image/*' }} sx={{ mb: 2 }} />
                                             {imageValidError && <Typography color="error">Invalid file type or size exceeds 5MB.</Typography>}
                                             {imageIsRequiredError && <Typography color="error">Image is required.</Typography>}
 
-
-                                            <Typography variant='body1'>Remarks*</Typography>
-                                            <OutlinedInput onChange={(e) => handleRemark(e.target.value)} value={remark} variant="outlined" placeholder='Fake deposit' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', border: 'none', '&.Mui-focused': { boxShadow: 'none', border: 'none' } }} />
+                                            <Typography variant="body1">Remarks*</Typography>
+                                            <OutlinedInput onChange={(e) => handleRemark(e.target.value)} value={remark} variant="outlined" placeholder="Fake deposit" sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', }} />
                                             {remarkIsRequiredError && <Typography color="error">Remark is required.</Typography>}
                                             {remarkValidError && (
                                                 <Typography sx={{ color: 'red', fontSize: '0.75rem', mt: 1 }}>
                                                     Please enter a valid remark
                                                 </Typography>
                                             )}
+
                                             <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                <Button
-                                                    onClick={ApprovedOrders}
-                                                    disableRipple sx={{
-                                                        minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 6, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
-                                                        backgroundColor: '#22C55D', color: '#fff', boxShadow: 'none', border: 'none', outline: 'none',
-                                                        '&:hover, &:active, &:focus': { backgroundColor: '#22C55D', color: '#fff', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
-                                                    }}>
-                                                    Approve
+                                                <Button onClick={() => { setOpenSubmittedModal(false); setSubmitDataModal(true); }} disabled={!isFormValid} disableRipple sx={{ minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 6, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500, backgroundColor: isFormValid ? '#22C55D' : '#9E9E9E', color: '#fff', boxShadow: 'none', '&:hover, &:active, &:focus': { backgroundColor: isFormValid ? '#1FAA5C' : '#9E9E9E', color: '#fff', }, }} >
+                                                    {userStatus === 'SUBMIT' ? 'Submit' : 'Approve'}
                                                 </Button>
                                             </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>
-                            }
+                            )}
+
                         </DialogContent>
                     </Dialog>
-
-
-                    {/* Approve MOdal */}
-                    <Dialog
-                        onClose={() => setOpenApproveModal(false)}
-                        aria-labelledby="customized-dialog-title"
-                        open={openApproveModal}
-                        maxWidth="xs"
-                        fullWidth
-                        sx={{
-                            '& .MuiDialog-paper': {
-                                borderRadius: '24px 24px 24px 24px',
-                            },
-                        }}
-                    >
+                    {/* Submit Confirm */}
+                    <Dialog onClose={() => setSubmitDataModal(false)} aria-labelledby="customized-dialog-title" open={submitDataModal} maxWidth="xs" fullWidth sx={{ '& .MuiDialog-paper': { borderRadius: '24px 24px 24px 24px', }, }} >
                         <DialogTitle sx={{ m: 1.2, mb: 0, p: 2, backgroundColor: '#F2F6FC', borderRadius: '24px 24px 0px 0px', display: 'flex', flexDirection: 'column' }} id="customized-dialog-title">
                             <Typography sx={{ textAlign: 'center' }}> Amount </Typography>
                             <Typography variant='h1' sx={{ textAlign: 'center', color: '#EF4444', fontWeight: '700' }}> {Price} INR </Typography>
                         </DialogTitle>
                         <IconButton
                             aria-label="close"
-                            onClick={() => setOpenApproveModal(false)}
+                            onClick={() => setSubmitDataModal(false)}
                             sx={(theme) => ({
                                 position: 'absolute',
                                 right: 18,
@@ -677,110 +576,28 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                         >
                             <CloseIcon />
                         </IconButton>
-                        <DialogContent sx={{ m: 1.2, mt: 0, mb: 0, p: 0, borderTop: '1px solid #EDEDED', display: 'flex', flexDirection: 'column' }}>
-                            {/* <Grid textAlign="center" xs={10} md={10} lg={10} xl={9} sx={{}}>
-                        <Typography sx={{ p: 2 }}> All fields are filled—would you like to <Typography sx={{ ml: 2, fontWeight: 800 }}>approve</Typography> the order now? </Typography></Grid> */}
-                            <Grid container
+                        <DialogContent sx={{ m: 2, mt: 0, p: 2, borderTop: '1px solid #EDEDED' }}>
+                            <Grid>
+                                <Typography variant='body1'>Enter UTR*</Typography>
+                                <OutlinedInput disabled value={utr} variant="outlined" placeholder='Remarks: Fake deposit' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', border: 'none', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
+                                <Typography variant='body1'>Upload Slip*</Typography>
+                                <OutlinedInput type="text" value={image?.name} disabled fullWidth />
+                                {imageValidError && <Typography color="error">Invalid file type or size exceeds 5MB.</Typography>}
+                                {imageIsRequiredError && <Typography color="error">Image is required.</Typography>}
 
-                                textAlign="center" // Centers the content horizontally
-                                alignItems="center" // Aligns the content vertically (
-                                sx={{ mt: 2 }}
-                            >
-                                <Grid xs={2}
-                                    md={2}
-                                    lg={2}
-                                    xl={2}></Grid>
-                                <Grid
-
-                                    xs={8}
-                                    md={8}
-                                    lg={8}
-                                    xl={8}
-                                >
-                                    <Typography
-                                        variant="body1" // Adjust the typography variant for desired font size
-                                        sx={{
-                                            textAlign: 'center', // Center the text
-                                            fontSize: { xs: '12px', md: '12px', lg: '14px' }, // Responsive font size
-                                            fontWeight: 400, // Normal weight
-                                        }}
-                                    >
-                                        All fields are filled—would you like to{' '}
-                                        <Typography
-                                            component="span"
-                                            sx={{
-                                                fontWeight: 'bold', // Bold for "approve"
-                                            }}
-                                        >
-                                            approve
-                                        </Typography>{' '}
-                                        the order now?
-                                    </Typography>
-                                </Grid>
-                                <Grid xs={2}
-                                    md={2}
-                                    lg={2}
-                                    xl={2}></Grid>
                             </Grid>
-                            <Grid fullWidth sx={{ m: 2 }}>
-                                <Typography>Enter UTR*</Typography>
-                                <OutlinedInput variant="outlined" placeholder='Remarks: Fake deposit' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', border: 'none', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
-                                <Typography>Enter UTR*</Typography>
-                                <OutlinedInput variant="outlined" placeholder='Remarks: Fake deposit' sx={{ mb: 2, width: '100%', boxShadow: 'none', backgroundColor: '#F7F7F7', border: 'none', '&.Mui-focused': { boxShadow: 'none', border: 'none' }, '&:hover': { border: 'none' } }} />
+                            <Grid sx={{ display: 'flex', justifyContent: 'center', mt:2 }}>
+                                <Button
+                                    onClick={ApprovedOrders}
+                                    disableRipple sx={{
+                                        minWidth: 'fit-content', textTransform: 'none', borderRadius: '32px', px: 6, mx: 0.5, py: 1, fontSize: '14px', fontWeight: 500,
+                                        backgroundColor: userStatus === 'SUBMITTED' ? '#22C55D' : '#5B3CA1', color: '#fff', boxShadow: 'none', border: 'none', outline: 'none',
+                                        '&:hover, &:active, &:focus': { backgroundColor: userStatus === 'SUBMITTED' ? '#22C55D' : '#5B3CA1', color: '#fff', boxShadow: 'none', }, '&:focus-visible': { outline: 'none', boxShadow: 'none' }, '&.MuiOutlinedInput - notchedOutline': { borderColor: 'transparent', }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent', },
+                                    }}>
+                                    {userStatus === 'SUBMITTED' ? 'Approve' : 'Submit'}
+                                </Button>
                             </Grid>
                         </DialogContent>
-                        <DialogActions
-                            sx={{
-                                mb: 2,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center', // Center-align buttons horizontally
-                                gap: 2, // Add space between buttons
-                            }}
-                        >
-                            <Grid container justifyContent="center" xs={10} md={10} lg={10} xl={9}>
-                                <Button
-                                    disableRipple
-                                    fullWidth
-                                    sx={{
-                                        textTransform: 'none',
-                                        borderRadius: '32px',
-                                        py: 1, // Adjust vertical padding
-                                        fontSize: '14px', // Slightly larger font size for better appearance
-                                        fontWeight: 'bold',
-                                        backgroundColor: '#22C55D', // Green button
-                                        color: '#fff',
-                                        '&:hover': {
-                                            backgroundColor: '#22C55D', // No color change on hover
-                                            color: '#fff',
-                                        },
-                                    }}
-                                >
-                                    Approve Now
-                                </Button>
-                            </Grid>
-                            <Grid container justifyContent="center" xs={10} md={10} lg={10} xl={9}>
-                                <Button
-                                    disableRipple
-                                    fullWidth
-                                    sx={{
-                                        textTransform: 'none',
-                                        borderRadius: '32px',
-                                        py: 1, // Adjust vertical padding
-                                        fontSize: '14px', // Slightly larger font size for better appearance
-                                        fontWeight: 'bold',
-                                        backgroundColor: '#929292', // Gray button
-                                        color: '#fff',
-                                        '&:hover': {
-                                            backgroundColor: '#929292', // No color change on hover
-                                            color: '#fff',
-                                        },
-                                    }}
-                                >
-                                    Let the assignee approve
-                                </Button>
-                            </Grid>
-                        </DialogActions>
                     </Dialog>
                 </Box>
                 :
@@ -797,7 +614,5 @@ export default function PayOutOperationData({ payOutData, onSendStatusCode }) {
                 </Grid>
             }
         </>
-
-
     );
 }
